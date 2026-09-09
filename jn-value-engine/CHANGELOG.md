@@ -1,33 +1,41 @@
 # Changelog
 
+## v3.0
+
+- 从“软约束 Skill”升级为**强协议 Skill**。
+- 新增三层架构：`Decision Engine → Decision Schema → Renderer`。
+- 新增固定 `JN Decision Schema`，不同 Agent 必须先填同一结构再输出。
+- 文字版固定为 10 个模块，模块名、顺序、表格列名和数量上限统一。
+- 视觉版改为固定 Renderer；宿主支持 SVG/HTML 时必须优先确定性渲染。
+- 固定画布 1200×1800、2:3，固定 Hero / 诊断区 / A-B-C / 路线 / KPI / Gate / 下一步 / Footer 布局。
+- 文字和图片必须从同一份 Schema 生成，禁止图片再次独立分析。
+- 生成式图片仅作为无法程序化渲染时的 fallback。
+- 新增 `schema/jn-decision-schema.json` 与 `renderer/README.md`。
+
+## v2.4
+
+- 将参考图视觉固化为 `JN VISUAL DESIGN SYSTEM`。
+- 新增颜色、栅格、Hero、卡片、A/B/C、时间轴、KPI、Gate、Footer 等跨 Agent 视觉规范。
+
+## v2.3.1
+
+- 明确完整输出必须先完整文字版，再紧接一张路线图。
+- 路线图不替代文字答案。
+
 ## v2.3
 
-1. 品牌定位统一为 **企业价值引擎**。
-2. GitHub 首页、Skill README 与 `SKILL.md` 不再使用“企业重大决策引擎”等旧称呼。
-3. 新增 **JN VISUAL ROADMAP**：每次 Skill 完成文字回答后，自动紧接生成一张商业 PPT 风格的可视化路线图。
-4. 路线图围绕本轮真实问题动态生成，通常包含：决策结论、企业现状、真正的问题、关键矛盾、A/B/C 方案对比、建议路线、关键指标、决策闸门、下一步行动。
-5. 路线图统一使用深海军蓝 / 白 / 浅灰 / 金色视觉体系，推荐绿色、风险红色，强调咨询公司 / 董事会 PPT 信息图质感。
-6. 严禁为了视觉效果编造 KPI、ROI、预算拆分、时间节点或行业基准；没有基线时使用“待量化 / 建立基线 / 需验证”。
-7. 移除默认 PDF 输出；完整输出改为：**文字判断 → 可视化路线图**。
-8. 宿主 Agent 有图片能力时必须直接生成图片；完全没有图片能力时才允许退化为 `VISUAL_ROADMAP_SPEC`。
+- 品牌统一为 **企业价值引擎**。
+- 新增回答后自动生成路线图。
+- 移除默认 PDF 输出。
 
 ## v2.2
 
-新增 `JN DECISION DASHBOARD`，将内部思考模块隐藏在后台，以结论、真正的问题、关键矛盾、方案比较、价值创造链、决策闸门、下一步和反转条件等模块进行结构化呈现。
+- 新增 `JN Decision Dashboard`。
 
 ## v2.1
 
-基于真实问题库盲测新增：
-
-1. **SCOPE_ROUTER**：明确主战场 / 协同区 / 让位区。
-2. **EXECUTIVE_COMPRESSION**：默认先给老板可读的“一句话判断 + 关键矛盾 + 下一步”。
-3. **DIVISIBILITY_CHECK**：防止把所有高投入项目机械建议成“先试点”。
-4. 明确专业边界：会计准则、税务、审计、具体交易执行让位给专业模块或专业人士。
+- 新增 `SCOPE_ROUTER`、`EXECUTIVE_COMPRESSION`、`DIVISIBILITY_CHECK`。
 
 ## v2.0
 
-由“财务模型 Router”升级为四层思考架构：
-
-`DEFINE → MECHANISM → DESIGN → DECIDE`
-
-加入关键矛盾、生命周期、系统边界、反事实、护城河与资本效率、证据阶梯、选择权、资本组合、证伪等工程化模块。
+- 升级为 `DEFINE → MECHANISM → DESIGN → DECIDE` 四层思考架构。
