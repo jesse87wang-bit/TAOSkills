@@ -1,5 +1,18 @@
 # Changelog
 
+## v3.2
+
+- 不改变 v3.1 的 Decision Engine，主要升级真实聊天场景的交互效率。
+- 三层强协议升级为四层：`Decision Engine → Decision Schema → Interaction Router → Renderer`。
+- 新增 `QUICK DECISION`：自然的一句话经营问题，首轮只给判断、真正的问题、最多3个关键判断、最多3个关键未知数与1条反转条件。
+- 新增 `HIGH-STAKES QUICK`：破产/重整、现金链断裂、控制权、重大并购、海外设厂、大额不可逆投资等高风险问题，在信息不足时短答但不得武断，必须保留条件性判断、关键未知数、最大尾部风险和反转条件。
+- 新增 `Interaction Router`：明确回答长度与决策复杂度是两条不同的轴，`QUICK ≠ LEVEL 1`、`FULL ≠ LEVEL 3`。
+- 用户明确调用 `jn-value-engine`、要求详细分析、路线图或报告时，直接使用 FULL。
+- QUICK 与 FULL 必须读取同一份 Decision Schema；同一事实下不得出现方向漂移。
+- QUICK 默认不生成路线图；FULL 继续使用固定 10 模块 Dashboard + 同源路线图。
+- 新增 Interaction Failure Modes：`QUICK_OVERSIMPLIFICATION`、`QUICK_OVERCONFIDENCE`、`QUICK_GENERIC`、`QUICK_FULL_DRIFT`、`QUICK_TOO_LONG`、`HIGH_STAKES_FLATTENING`。
+- 开发阶段完成 QUICK vs FULL、5道高风险反向题与混合路由的单窗口受控模拟测试；结果仅用于工程筛选，不作为独立跨 Agent 实验或现实决策有效性证明。
+
 ## v3.1
 
 - 正式升级 Decision Engine，同时保留 v3.0 的三层强协议：`Decision Engine → Decision Schema → Renderer`。
