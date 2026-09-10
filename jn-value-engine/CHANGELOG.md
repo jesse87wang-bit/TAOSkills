@@ -1,5 +1,23 @@
 # Changelog
 
+## v3.1
+
+- 正式升级 Decision Engine，同时保留 v3.0 的三层强协议：`Decision Engine → Decision Schema → Renderer`。
+- 新增 `COMPLEXITY_GATE 2.0`：简单经营题走 FAST ECONOMICS，重大价值题才启用完整引擎。
+- 新增 `MINIMUM_EVIDENCE_GATE`：缺失信息会改变结论时，必须给条件性判断，禁止伪精确。
+- 强化 `QUALITATIVE_BEFORE_QUANTITATIVE`：先理解赛道、位置、模式、生命周期与目标，再解释数字。
+- 新增 `QUALITY_BEFORE_QUANTITY`：关键数字按 `AMOUNT → COMPOSITION → QUALITY → SUSTAINABILITY → VALUE CONSEQUENCE` 拆解。
+- 统一 `TRACE TO VALUE`：`数字 → 结构 → 经营行为 → 商业模式 → 战略选择 → 可持续性 → 企业价值后果`。
+- 新增 `REDESIGN_MATERIALITY_GATE`：必须检查是否值得重设计，但禁止为了“设计思维”强行创造复杂第三方案。
+- 第二曲线、多元化、跨行业与相关并购新增 `CAPABILITY_TRANSFER` 条件路由。
+- 新增 `FORECAST_MODE`：区分历史外推、里程碑/实物期权、终局反推三种预测逻辑。
+- 融资与交易判断强化为 `Money + Rights + Resources + Constraints`。
+- 重大融资、投资、并购、生态问题增加 `OFF_BALANCE_VALUE_AND_RISK` 扫描。
+- Schema 正式升级到 v3.1，加入复杂度、战略情境、数字质量、证据闸门、重设计、预测模式等字段。
+- LEVEL 1 允许短版输出，不再强行生成三阶段路线图或视觉图；LEVEL 2/3 继续使用固定 10 模块 Dashboard + 路线图。
+- 对外统一名称仍为 **企业价值引擎**；不代表任何教师、学校或机构。
+- 开发阶段使用真实企业问题回归集与单窗口受控模拟识别失败模式；模拟结果仅用于工程迭代，不作为独立跨 Agent 实验或现实有效性证明。
+
 ## v3.0
 
 - 从“软约束 Skill”升级为**强协议 Skill**。
