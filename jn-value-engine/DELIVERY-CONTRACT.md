@@ -1,106 +1,143 @@
-# JN VALUE ENGINE — NON-NEGOTIABLE DELIVERY CONTRACT v2
+# JN VALUE ENGINE — NON-NEGOTIABLE DELIVERY CONTRACT v3
 
-This contract is mandatory for every normal invocation of `jn-value-engine` and overrides brevity, routing, complexity, convenience, and default tool-call habits.
+This contract is mandatory for every normal invocation of `jn-value-engine` and overrides brevity, routing, complexity, convenience, default final-answer habits, and tool-call habits.
 
-## The key implementation rule
+# 1. ONE INVOCATION = TWO MANDATORY DELIVERABLES
 
-**The complete text must be emitted as a USER-VISIBLE assistant message BEFORE the visual/image tool call is issued.**
+A normal invocation has exactly two mandatory user-facing deliverables, in this exact order:
 
-It is NOT sufficient to internally draft the text and then call the image tool before sending the text in a later final message. If the host UI renders tool output before the final answer, placing the text only in the final answer violates this contract.
+**DELIVERABLE A — COMPLETE TEXT (01–10)**
 
-Therefore the required runtime sequence is:
+then
+
+**DELIVERABLE B — JN VISUAL ROADMAP**
+
+The invocation is not complete after Deliverable A. Text completion is an intermediate state, never a terminal state, unless the user explicitly opts out of the image.
+
+Formal completion rule:
+
+`DONE = TEXT_VISIBLE_COMPLETE && ROADMAP_VISIBLE_COMPLETE && TEXT_VISIBLE_BEFORE_ROADMAP`
+
+# 2. REQUIRED RUNTIME SEQUENCE
 
 `USER QUESTION`
 → `INTERNAL DECISION / SCHEMA`
-→ `USER-VISIBLE TEXT MESSAGE (01–10)`
-→ `TEXT_VISIBLE_ACK = TRUE`
-→ `IMAGE/VISUAL TOOL CALL`
-→ `ROADMAP VISIBLE`
+→ `EMIT COMPLETE USER-VISIBLE TEXT 01–10`
+→ `TEXT_VISIBLE = TRUE`
+→ **`CONTINUE_EXECUTION = TRUE`**
+→ `CALL IMAGE / VISUAL TOOL`
+→ `ROADMAP VISIBLE = TRUE`
 → `DONE`
 
-### Host/channel implementation
-If the host supports a user-visible pre-tool assistant/commentary message, **put the entire 01–10 text answer there first**, then call the visual tool. Do NOT defer the 01–10 answer to the final channel after the image tool.
+There is NO valid STOP, RETURN, FINALIZE, WAIT_FOR_USER, or END transition between `TEXT_VISIBLE = TRUE` and `CALL IMAGE / VISUAL TOOL`.
 
-If a host genuinely cannot display user-visible text before a visual tool call, the Agent must not claim the required order was satisfied. It should use a rendering path that can be invoked after visible text, or report the host limitation rather than silently reversing the order.
+After the text becomes visible, the next mandatory action is the visual tool call.
 
-## Definition of DONE
+# 3. TEXT MUST REALLY APPEAR FIRST
 
-`DONE = TEXT_VISIBLE_COMPLETE && ROADMAP_VISIBLE_COMPLETE && TEXT_RENDER_TIMESTAMP < ROADMAP_RENDER_TIMESTAMP`
+The complete text must be emitted as a user-visible assistant message before the visual tool call is issued.
 
-- text only → `DELIVERY_ROADMAP_MISSING`
-- roadmap only → `DELIVERY_TEXT_MISSING`
-- roadmap visually appears first → `DELIVERY_ORDER_VIOLATION`
-- text was internally prepared but not visible before tool call → `DELIVERY_ORDER_VIOLATION`
+It is not sufficient to draft text internally and then call the image tool before sending that text in a later final message.
 
-## Deliverable A — complete text first
+Forbidden:
 
-Before ANY image/visual tool call, the user must already be able to read all ten sections:
+`USER → INTERNAL TEXT → IMAGE TOOL → FINAL TEXT`
+
+Required:
+
+`USER → USER-VISIBLE TEXT 01–10 → IMAGE TOOL → ROADMAP`
+
+If the host supports a user-visible pre-tool commentary/assistant message, place the entire 01–10 answer there, then immediately call the visual tool.
+
+# 4. DELIVERABLE A — COMPLETE TEXT
+
+Before any visual tool call, the user must already be able to read:
 
 01 决策结论
 02 真正的问题
 03 关键矛盾
 04 方案对比
 05 价值创造逻辑
-06 建议路线图（文字表格）
+06 建议路线图（文字）
 07 关键验证指标
 08 决策闸门
 09 下一步行动
 10 什么会让我改变判断
 
-Formal output must hide internal codes and engineering terms, including HOLD, CONDITIONAL_GO, NEED_MORE_EVIDENCE, LEVEL 1/2/3, ENGINE-C, Router names and confidence fields.
+Formal output must hide internal codes and engineering terms including HOLD, CONDITIONAL_GO, NEED_MORE_EVIDENCE, LEVEL labels, ENGINE-C, Router names, and internal confidence fields.
 
-## Mandatory pre-tool checkpoint
+# 5. MANDATORY CONTINUATION GATE
 
-Immediately before calling image generation / SVG / HTML / Canvas / visual renderer, verify:
+Immediately after section 10 has been emitted, run this check internally:
 
-- [ ] 01–10 have ALREADY BEEN SENT in a user-visible assistant message.
-- [ ] The user can see the recommendation before the roadmap starts rendering.
-- [ ] No internal status codes appear in the visible text.
+- Did the user explicitly say `只要文字`, `不要图`, `先别生成图`, or equivalent?
+  - YES → invocation may end after text.
+  - NO → **MUST CONTINUE TO VISUAL GENERATION NOW.**
+
+Do not ask `要不要生成路线图？`.
+Do not say `下一步可以生成路线图`.
+Do not say the host cannot continue unless a visual tool truly does not exist.
+Do not end the answer after section 10.
+Do not wait for another user message.
+Do not interpret text completion as task completion.
+
+If a visual/image tool exists in the current host and the user did not opt out, failure to call it after text is `DELIVERY_ROADMAP_MISSING`.
+
+# 6. PRE-VISUAL CHECKPOINT
+
+Before calling image generation / SVG / HTML / Canvas / visual renderer, verify:
+
+- [ ] 01–10 have already been emitted in user-visible text.
+- [ ] The recommendation is visible before the roadmap.
+- [ ] No internal status codes appear.
 - [ ] A/B/C ranking is fixed when material.
 - [ ] Roadmap stages, metrics, gates and next actions are fixed.
 - [ ] Unknown values use 待量化 / 建立基线 / 需验证.
 - [ ] Reversal conditions are present.
 
-If the first checkbox is false, **THE IMAGE TOOL CALL IS FORBIDDEN.**
+If the first checkbox is false: visual tool call is forbidden.
+If all are true: visual tool call is mandatory unless explicit opt-out exists.
 
-## Deliverable B — mandatory roadmap after text
+# 7. DELIVERABLE B — JN VISUAL ROADMAP
 
-Once Deliverable A is visibly complete, continue automatically to roadmap generation. Do not stop, ask permission, or wait for another user turn unless the user explicitly opted out of the image.
+The roadmap is mandatory after text and uses the same Decision Schema. It may not introduce a new conclusion, option, metric, number, budget, timeline, KPI or recommendation.
 
-The roadmap must use the same Decision Schema and may not add a new conclusion, option, metric, number, budget, timeline or recommendation.
-
-## Fixed JN visual system
-
-Default canvas: vertical 2:3, approximately 1200×1800.
-
-Fixed order:
+Fixed information order:
 Hero → 01 决策结论 → 02 真正的问题 / 03 关键矛盾 / 04 当前痛点 → 05 A/B/C 方案对比 → 06 三阶段路线 → 07 KPI → 08 决策闸门 → 09 下一步 → Footer.
 
 Brand: `JN 企业价值引擎`.
 Footer: `jn-value-engine` + `从问题到价值，从判断到行动`.
 
-Palette: dark navy #0E2A45, secondary navy #123A5A, text navy #14324A, white #FFFFFF, light blue-gray #F4F7FA, divider #DCE4EB, gold #D6A33D, pale gold #FFF3D6, recommendation green #21A657 / #EAF7EE, risk red #E34E4E / #FDECEC, information blue #3D78B7.
+Default canvas: vertical 2:3, approximately 1200×1800.
 
-Use a subdued realistic industry-specific hero image, consulting/boardroom PPT aesthetics, pale-gold numbered tabs, equal-width A/B/C cards, blue three-stage arrows, KPI cards, four gold decision gates, and navy footer. No cyberpunk, neon, cartoon, magazine collage, flashy 3D, emoji icon mixing, or free redesign of information architecture.
+Palette: dark navy #0E2A45; secondary navy #123A5A; text navy #14324A; white #FFFFFF; light blue-gray #F4F7FA; divider #DCE4EB; gold #D6A33D; pale gold #FFF3D6; recommendation green #21A657 / #EAF7EE; risk red #E34E4E / #FDECEC; information blue #3D78B7.
 
-Do not invent dates, budgets, ROI, benchmark values or target values not established in Deliverable A.
+Use a subdued realistic industry-specific hero, consulting/boardroom PPT aesthetics, pale-gold numbered tabs, equal-width A/B/C cards, blue three-stage arrows, KPI cards, four gold decision gates, navy footer, flat business icons. No cyberpunk, neon, cartoon, magazine collage, flashy 3D, emoji mixing, or free redesign.
 
-## Exceptions
+Do not invent dates, budgets, ROI, benchmarks, KPI targets or other values not established in the text.
 
-Only explicit user instructions can change the contract:
-- “只要文字 / 不要图” → text only.
-- “只要路线图 / 不要文字” → roadmap only.
-- “先别生成图” → stop after text for that invocation.
-- “简版/30秒版” without opting out of image → shorter text first, roadmap still follows.
+# 8. HOST EXECUTION RULE
 
-Silence, short questions, missing data, high risk, tool inconvenience, or model preference are NOT opt-outs.
+If the host has a visual/image tool, the Agent must use it after the visible text. Tool inconvenience is not an exception.
 
-## Failure labels
+If the host truly has no visual rendering capability, state that limitation only after delivering text. But never claim a host limitation when an image/visual tool is actually available.
 
-- `DELIVERY_TEXT_MISSING`
-- `DELIVERY_ROADMAP_MISSING`
-- `DELIVERY_ORDER_VIOLATION`
-- `DELIVERY_SCHEMA_DRIFT`
-- `DELIVERY_INTERNAL_LEAK`
+# 9. EXCEPTIONS — EXPLICIT USER OPT-OUT ONLY
 
-Any failure means the invocation failed even if the analysis itself was correct.
+The two-deliverable contract changes only if the user explicitly says:
+- `只要文字 / 不要图 / 先别生成图` → text only.
+- `只要路线图 / 不要文字` → roadmap only.
+- `简版 / 30秒版` without opting out of image → shorter text first, roadmap still mandatory.
+
+Silence, a short question, missing data, high risk, long text, model preference, or tool inconvenience are not opt-outs.
+
+# 10. FAILURE LABELS
+
+- `DELIVERY_TEXT_MISSING`: roadmap without full text.
+- `DELIVERY_ROADMAP_MISSING`: visible text exists but visual tool was not called / roadmap omitted.
+- `DELIVERY_ORDER_VIOLATION`: roadmap/tool call occurred before visible text.
+- `DELIVERY_SCHEMA_DRIFT`: roadmap changes the text decision.
+- `DELIVERY_INTERNAL_LEAK`: internal status or engineering terms appear in formal output.
+- `DELIVERY_PREMATURE_STOP`: Agent stopped after text despite visual capability and no user opt-out.
+
+Any one means the invocation failed even if the analysis itself was correct.
