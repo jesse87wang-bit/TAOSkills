@@ -1,58 +1,31 @@
-# JN VALUE ENGINE — NON-NEGOTIABLE DELIVERY CONTRACT v3
+# JN VALUE ENGINE — NON-NEGOTIABLE DELIVERY CONTRACT v4
 
-This contract is mandatory for every normal invocation of `jn-value-engine` and overrides brevity, routing, complexity, convenience, default final-answer habits, and tool-call habits.
+This contract is mandatory for every normal invocation of `jn-value-engine`.
 
-# 1. ONE INVOCATION = TWO MANDATORY DELIVERABLES
+# 1｜固定流水线：文字 → 文字质检 → 路线图 → 成图质检 → DONE
 
-A normal invocation has exactly two mandatory user-facing deliverables, in this exact order:
-
-**DELIVERABLE A — COMPLETE TEXT (01–10)**
-
-then
-
-**DELIVERABLE B — JN VISUAL ROADMAP**
-
-The invocation is not complete after Deliverable A. Text completion is an intermediate state, never a terminal state, unless the user explicitly opts out of the image.
-
-Formal completion rule:
-
-`DONE = TEXT_VISIBLE_COMPLETE && ROADMAP_VISIBLE_COMPLETE && TEXT_VISIBLE_BEFORE_ROADMAP`
-
-# 2. REQUIRED RUNTIME SEQUENCE
+正常调用只有一条合法路径：
 
 `USER QUESTION`
 → `INTERNAL DECISION / SCHEMA`
-→ `EMIT COMPLETE USER-VISIBLE TEXT 01–10`
-→ `TEXT_VISIBLE = TRUE`
-→ **`CONTINUE_EXECUTION = TRUE`**
-→ `CALL IMAGE / VISUAL TOOL`
-→ `ROADMAP VISIBLE = TRUE`
+→ `DELIVER COMPLETE TEXT 01–10`
+→ `TEXT_QA`
+→ `TEXT_QA = PASS`
+→ `CONTINUE_EXECUTION = TRUE`
+→ `GENERATE JN ROADMAP`
+→ `VISUAL_QA`
+→ `VISUAL_QA = PASS`
 → `DONE`
 
-There is NO valid STOP, RETURN, FINALIZE, WAIT_FOR_USER, or END transition between `TEXT_VISIBLE = TRUE` and `CALL IMAGE / VISUAL TOOL`.
+任何一步失败都不得宣告 DONE。
 
-After the text becomes visible, the next mandatory action is the visual tool call.
+完成条件：
 
-# 3. TEXT MUST REALLY APPEAR FIRST
+`DONE = TEXT_VISIBLE_COMPLETE && TEXT_QA_PASS && ROADMAP_VISIBLE_COMPLETE && VISUAL_QA_PASS && TEXT_VISIBLE_BEFORE_ROADMAP`
 
-The complete text must be emitted as a user-visible assistant message before the visual tool call is issued.
+# 2｜DELIVERABLE A：先完整文字
 
-It is not sufficient to draft text internally and then call the image tool before sending that text in a later final message.
-
-Forbidden:
-
-`USER → INTERNAL TEXT → IMAGE TOOL → FINAL TEXT`
-
-Required:
-
-`USER → USER-VISIBLE TEXT 01–10 → IMAGE TOOL → ROADMAP`
-
-If the host supports a user-visible pre-tool commentary/assistant message, place the entire 01–10 answer there, then immediately call the visual tool.
-
-# 4. DELIVERABLE A — COMPLETE TEXT
-
-Before any visual tool call, the user must already be able to read:
-
+必须先向用户展示：
 01 决策结论
 02 真正的问题
 03 关键矛盾
@@ -64,80 +37,178 @@ Before any visual tool call, the user must already be able to read:
 09 下一步行动
 10 什么会让我改变判断
 
-Formal output must hide internal codes and engineering terms including HOLD, CONDITIONAL_GO, NEED_MORE_EVIDENCE, LEVEL labels, ENGINE-C, Router names, and internal confidence fields.
+正式输出隐藏所有内部状态码、置信度、LEVEL、ENGINE-C、Router 等工程术语。
 
-# 5. MANDATORY CONTINUATION GATE
+# 3｜TEXT_QA：文字生成后、路线图生成前的强制检查
 
-Immediately after section 10 has been emitted, run this check internally:
+文字 01–10 已经生成后，必须先识别/读取刚刚生成的文字内容，以用户实际可见版本为准，而不是只相信内部草稿。逐项检查：
 
-- Did the user explicitly say `只要文字`, `不要图`, `先别生成图`, or equivalent?
-  - YES → invocation may end after text.
-  - NO → **MUST CONTINUE TO VISUAL GENERATION NOW.**
+## A. 完整性
+- [ ] 01–10 十个模块全部存在且顺序正确。
+- [ ] 没有模块被“见下图”“略”等替代。
+- [ ] 结论能够独立阅读。
 
-Do not ask `要不要生成路线图？`.
-Do not say `下一步可以生成路线图`.
-Do not say the host cannot continue unless a visual tool truly does not exist.
-Do not end the answer after section 10.
-Do not wait for another user message.
-Do not interpret text completion as task completion.
+## B. 决策一致性
+- [ ] 01 的核心结论与 04 的方案排序一致。
+- [ ] 06 的三阶段路线支持 01 的结论。
+- [ ] 08 的 Gate 与 10 的反转条件不互相冲突。
+- [ ] 不存在前文推荐、后文否定同一方案的逻辑漂移。
 
-If a visual/image tool exists in the current host and the user did not opt out, failure to call it after text is `DELIVERY_ROADMAP_MISSING`.
+## C. 证据纪律
+- [ ] 用户未提供的数据没有被编造。
+- [ ] 未知项统一使用“待量化 / 建立基线 / 需验证”。
+- [ ] 没有凭空出现行业均值、ROI、概率、预算、月份、KPI 目标。
+- [ ] 用户给出的关键数字被正确保留，不擅自改写。
 
-# 6. PRE-VISUAL CHECKPOINT
+## D. 用户语言
+- [ ] 不出现 HOLD / CONDITIONAL_GO / NEED_MORE_EVIDENCE / LEVEL / ENGINE-C / Router / confidence 等内部语言。
+- [ ] 结论是企业经营者可直接理解的自然语言。
+- [ ] 表格和段落不存在明显重复、残句、错别字或术语混乱。
 
-Before calling image generation / SVG / HTML / Canvas / visual renderer, verify:
+## E. 可视化就绪
+- [ ] 已明确 1 条核心结论。
+- [ ] 已明确真正的问题。
+- [ ] 已明确最多 3 个关键矛盾/痛点。
+- [ ] A/B/C 方案及排序已确定（若三方案有意义）。
+- [ ] 三阶段路线已确定。
+- [ ] 3–5 个指标已确定或标记待量化。
+- [ ] 4 个 Gate 已确定。
+- [ ] 3–4 个下一步动作已确定。
 
-- [ ] 01–10 have already been emitted in user-visible text.
-- [ ] The recommendation is visible before the roadmap.
-- [ ] No internal status codes appear.
-- [ ] A/B/C ranking is fixed when material.
-- [ ] Roadmap stages, metrics, gates and next actions are fixed.
-- [ ] Unknown values use 待量化 / 建立基线 / 需验证.
-- [ ] Reversal conditions are present.
+### TEXT_QA 判定
+所有必要项通过：`TEXT_QA = PASS`，必须继续生成路线图。
+任何必要项失败：`TEXT_QA = FAIL`，先修正文字，再重新检查；不得直接生图。
 
-If the first checkbox is false: visual tool call is forbidden.
-If all are true: visual tool call is mandatory unless explicit opt-out exists.
+# 4｜强制继续规则
 
-# 7. DELIVERABLE B — JN VISUAL ROADMAP
+`TEXT_QA = PASS` 后，只检查用户是否明确说“不要图 / 只要文字 / 先别生成图”。
 
-The roadmap is mandatory after text and uses the same Decision Schema. It may not introduce a new conclusion, option, metric, number, budget, timeline, KPI or recommendation.
+若没有明确 opt-out：
 
-Fixed information order:
-Hero → 01 决策结论 → 02 真正的问题 / 03 关键矛盾 / 04 当前痛点 → 05 A/B/C 方案对比 → 06 三阶段路线 → 07 KPI → 08 决策闸门 → 09 下一步 → Footer.
+**下一动作必须是视觉工具调用。不得 STOP、RETURN、FINALIZE、WAIT_FOR_USER。**
 
-Brand: `JN 企业价值引擎`.
-Footer: `jn-value-engine` + `从问题到价值，从判断到行动`.
+文字完成只是中间状态，不是任务完成。
 
-Default canvas: vertical 2:3, approximately 1200×1800.
+# 5｜DELIVERABLE B：JN 企业价值路线图
 
-Palette: dark navy #0E2A45; secondary navy #123A5A; text navy #14324A; white #FFFFFF; light blue-gray #F4F7FA; divider #DCE4EB; gold #D6A33D; pale gold #FFF3D6; recommendation green #21A657 / #EAF7EE; risk red #E34E4E / #FDECEC; information blue #3D78B7.
+路线图必须使用通过 TEXT_QA 的同一份文字/Decision Schema，只做视觉压缩，不重新判断。
 
-Use a subdued realistic industry-specific hero, consulting/boardroom PPT aesthetics, pale-gold numbered tabs, equal-width A/B/C cards, blue three-stage arrows, KPI cards, four gold decision gates, navy footer, flat business icons. No cyberpunk, neon, cartoon, magazine collage, flashy 3D, emoji mixing, or free redesign.
+固定信息结构：
+Hero → 01 决策结论 → 02 真正的问题 / 03 关键矛盾 / 04 当前痛点 → 05 A/B/C 方案对比 → 06 三阶段路线 → 07 KPI → 08 决策闸门 → 09 下一步 → Footer。
 
-Do not invent dates, budgets, ROI, benchmarks, KPI targets or other values not established in the text.
+固定品牌：`JN 企业价值引擎`。
+Footer：`jn-value-engine` + `从问题到价值，从判断到行动`。
 
-# 8. HOST EXECUTION RULE
+默认竖版 2:3，约 1200×1800。
 
-If the host has a visual/image tool, the Agent must use it after the visible text. Tool inconvenience is not an exception.
+固定色板：深海军蓝 #0E2A45；次级海军蓝 #123A5A；文字深蓝 #14324A；白 #FFFFFF；浅灰蓝 #F4F7FA；分隔线 #DCE4EB；金色 #D6A33D；浅金 #FFF3D6；推荐绿 #21A657 / #EAF7EE；风险红 #E34E4E / #FDECEC；信息蓝 #3D78B7。
 
-If the host truly has no visual rendering capability, state that limitation only after delivering text. But never claim a host limitation when an image/visual tool is actually available.
+固定风格：商业咨询/董事会 PPT；低饱和行业 Hero；浅金编号；白色圆角卡片；A/B/C 等宽；推荐绿、不推荐红、有条件金；三阶段深蓝→中蓝→浅蓝连续箭头；KPI 横卡；4 个金色 Gate；深蓝 Footer；扁平商务图标。禁止自由换主题、赛博朋克、霓虹、卡通、杂志拼贴、闪亮3D和 emoji 混搭。
 
-# 9. EXCEPTIONS — EXPLICIT USER OPT-OUT ONLY
+# 6｜VISUAL_QA：成图之后的强制检查
 
-The two-deliverable contract changes only if the user explicitly says:
-- `只要文字 / 不要图 / 先别生成图` → text only.
-- `只要路线图 / 不要文字` → roadmap only.
-- `简版 / 30秒版` without opting out of image → shorter text first, roadmap still mandatory.
+路线图生成后必须识别/检查最终成图本身，而不是只检查生成 prompt。优先使用宿主的原生视觉理解直接读取图片；不要默认依赖 OCR。只有原生视觉无法可靠读取时才考虑 OCR。
 
-Silence, a short question, missing data, high risk, long text, model preference, or tool inconvenience are not opt-outs.
+逐项检查：
 
-# 10. FAILURE LABELS
+## A. 交付顺序
+- [ ] 完整文字实际显示在路线图之前。
+- [ ] 路线图确实已经生成并可见。
 
-- `DELIVERY_TEXT_MISSING`: roadmap without full text.
-- `DELIVERY_ROADMAP_MISSING`: visible text exists but visual tool was not called / roadmap omitted.
-- `DELIVERY_ORDER_VIOLATION`: roadmap/tool call occurred before visible text.
-- `DELIVERY_SCHEMA_DRIFT`: roadmap changes the text decision.
-- `DELIVERY_INTERNAL_LEAK`: internal status or engineering terms appear in formal output.
-- `DELIVERY_PREMATURE_STOP`: Agent stopped after text despite visual capability and no user opt-out.
+## B. 文图同源
+- [ ] 图片核心结论与文字 01 完全同向。
+- [ ] A/B/C 方案及推荐关系与文字一致。
+- [ ] 三阶段路线与文字 06 一致。
+- [ ] KPI/指标只来自文字 07。
+- [ ] Gate 只来自文字 08。
+- [ ] 下一步只来自文字 09。
+- [ ] 图片没有新增文字版不存在的数字、时间、预算、ROI、KPI 或事实。
 
-Any one means the invocation failed even if the analysis itself was correct.
+## C. 文字准确性
+- [ ] 标题无错别字、漏字、重复字。
+- [ ] 品牌必须为“JN 企业价值引擎”。
+- [ ] Footer 必须为 `jn-value-engine` + `从问题到价值，从判断到行动`。
+- [ ] 关键数字与文字版一致。
+- [ ] 不出现乱码、伪汉字、错误偏旁、明显字体变形。
+- [ ] 不出现内部状态码或工程术语。
+
+## D. 信息完整性
+- [ ] 01 决策结论存在。
+- [ ] 02 真正的问题存在。
+- [ ] 03 关键矛盾存在。
+- [ ] 04 当前痛点存在。
+- [ ] 05 方案对比存在。
+- [ ] 06 三阶段路线存在。
+- [ ] 07 KPI 存在。
+- [ ] 08 决策闸门存在。
+- [ ] 09 下一步存在。
+
+## E. 视觉规范
+- [ ] 2:3 竖版商业咨询信息图。
+- [ ] 深海军蓝 + 金色 + 白/浅灰蓝为主。
+- [ ] Hero 与行业相关且低饱和。
+- [ ] 卡片、间距、对齐、层级清楚。
+- [ ] A/B/C 三列等宽且状态色正确。
+- [ ] 三阶段路线为蓝色连续流程。
+- [ ] 4 个 Gate 为金色节点。
+- [ ] 没有赛博朋克、霓虹、卡通、杂志拼贴或自由改版。
+- [ ] 字体大小足以阅读，没有严重拥挤、遮挡、裁切或溢出。
+
+### VISUAL_QA 判定
+全部关键项通过：`VISUAL_QA = PASS`，本次调用才允许 DONE。
+
+出现以下任一情况直接 `VISUAL_QA = FAIL`：
+- 关键结论错误或文图不一致；
+- 关键数字错误；
+- 新增不存在的事实/预算/时间/KPI；
+- 主要标题或关键模块出现错字/乱码；
+- 缺失核心模块；
+- 品牌/视觉系统明显偏离；
+- 严重排版不可读。
+
+若 FAIL：必须修图/重新生成 → 再次 VISUAL_QA，直到 PASS 或达到宿主可执行限制。不得把明显失败图当正式交付。
+
+# 7｜建议评分制
+
+除硬性 FAIL 项外，对每次交付做 100 分检查：
+- 文字完整与逻辑：20
+- 决策一致性与证据纪律：20
+- 文图同源：20
+- 图片文字准确性：15
+- 视觉规范与可读性：15
+- 顺序与交付完整：10
+
+**90–100：PASS，可正式交付**
+**80–89：需修正后交付**
+**<80：FAIL，必须重做**
+
+任何硬性 FAIL 项出现，即使总分 ≥90，也必须 FAIL。
+
+# 8｜例外
+
+只有用户明确要求才改变：
+- `只要文字 / 不要图 / 先别生成图` → 文字 + TEXT_QA 后可结束。
+- `只要路线图 / 不要文字` → 可跳过文字交付，但仍必须做 VISUAL_QA。
+- `简版 / 30秒版`且未拒绝图片 → 简版文字 → TEXT_QA → 路线图 → VISUAL_QA。
+
+沉默、短问题、信息不足、高风险、长文本、工具不便都不是例外。
+
+# 9｜Failure Labels
+
+- `TEXT_QA_INCOMPLETE`
+- `TEXT_QA_LOGIC_DRIFT`
+- `TEXT_QA_FABRICATION`
+- `TEXT_QA_INTERNAL_LEAK`
+- `DELIVERY_TEXT_MISSING`
+- `DELIVERY_ROADMAP_MISSING`
+- `DELIVERY_ORDER_VIOLATION`
+- `DELIVERY_PREMATURE_STOP`
+- `DELIVERY_SCHEMA_DRIFT`
+- `VISUAL_QA_TEXT_ERROR`
+- `VISUAL_QA_NUMBER_ERROR`
+- `VISUAL_QA_MISSING_SECTION`
+- `VISUAL_QA_STYLE_DRIFT`
+- `VISUAL_QA_LAYOUT_FAILURE`
+- `VISUAL_QA_FABRICATION`
+
+Any failure means the invocation is not DONE.
