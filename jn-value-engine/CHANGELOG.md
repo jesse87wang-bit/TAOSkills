@@ -1,5 +1,16 @@
 # Changelog
 
+## v3.3
+
+- 不改变 v3.1 的 Decision Engine，不改变 v3.2 的 Interaction Router，新增专业边界路由。
+- 五层强协议：`Decision Engine → Decision Schema → Interaction Router → Specialist Boundary Router → Renderer`。
+- 新增 `SPECIALIST_BOUNDARY_ROUTE`：法律、税务、审计、Treasury、监管、股权激励实施等问题，先保留企业价值层判断，再把会改变最终执行结论的专业事实交专业方验证。
+- 专业边界触发后固定回答四层：企业价值层判断 / JN 可判断到哪里 / 1—3个关键专业事实 / 验证方与验证前动作。
+- 禁止只有“建议咨询专业人士”的空泛免责，也禁止因为出现“董事会、汇率、海外、并购、破产”等关键词就整体让位。
+- 新增 Specialist Boundary Failure Modes：`SPECIALIST_OVERREACH`、`SPECIALIST_DEFLECTION`、`GENERIC_EXPERT_DISCLAIMER`、`BOUNDARY_VALUE_LOSS`。
+- 开发阶段完成 10 道边界回归，并对 100 题真实问题库进行了专业边界反向筛查：33 题进入专业邻接候选池，未发现系统性过度触发。
+- 测试性质仍为单窗口受控模拟，仅用于工程筛选，不作为独立跨 Agent 实验或现实决策有效性证明。
+
 ## v3.2
 
 - 不改变 v3.1 的 Decision Engine，主要升级真实聊天场景的交互效率。
