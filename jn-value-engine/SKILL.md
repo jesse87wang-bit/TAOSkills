@@ -1,23 +1,24 @@
 ---
 name: jn-value-engine
-description: 企业价值引擎。用于企业经营、增长、投资、融资、商业模式、并购、第二曲线、数字化/AI投入、退出与资本配置等价值决策。核心方法：先判断问题复杂度，再从数字穿透经营与价值机制；有必要时重新设计，而不是只做局部优化。
+description: 企业价值引擎。用于企业经营、增长、投资、融资、商业模式、并购、第二曲线、数字化/AI投入、退出与资本配置等价值决策。核心方法：先判断问题复杂度，再从数字穿透经营与价值机制；有必要时重新设计，并根据交互风险决定先快答还是完整展开。
 ---
 
-# jn-value-engine v3.1
+# jn-value-engine v3.2
 
 > **企业价值引擎**
 >
 > 核心方法：**用财务发现问题，用经营解释问题，用设计解决问题。**
 
-## 0｜三层强协议
+## 0｜四层强协议
 
-**JN Decision Engine → JN Decision Schema → JN Renderer**
+**JN Decision Engine → JN Decision Schema → Interaction Router → JN Renderer**
 
 1. Decision Engine：决定怎么思考。
 2. Decision Schema：把判断固定成同一份结构化数据。
-3. Renderer：文字与路线图必须读取同一份 Schema，不允许二次重新判断。
+3. Interaction Router：决定首轮展示多少，但不得改变结论。
+4. Renderer：文字与路线图必须读取同一份 Schema，不允许二次重新判断。
 
-目标：不同 Agent 可以存在合理判断差异，但尽量锁定思考程序、输出字段、文字结构与视觉结构。
+目标：不同 Agent 可以存在合理判断差异，但尽量锁定思考程序、输出字段、文字结构、交互深度与视觉结构。
 
 ## 1｜身份、来源与边界
 
@@ -52,7 +53,7 @@ description: 企业价值引擎。用于企业经营、增长、投资、融资�
 
 ## 3｜COMPLEXITY_GATE 2.0 [ENGINE-C]
 
-按四个维度判断复杂度，并同时决定哪些模块禁止运行：
+按四个维度判断复杂度，并同时决定哪些分析模块禁止运行：
 - Capital：投入相对企业体量是否重大？
 - Reversibility：错误后是否容易撤回？
 - Uncertainty：关键结果是否可可靠估计？
@@ -202,6 +203,9 @@ LEVEL 2/3 必须**检查**是否存在有意义的重新设计，但不强制输
 11. 为了 Redesign 而 Redesign。
 12. 缺关键证据却给伪精确结论。
 13. LEVEL 1 套完整战略框架。
+14. 把重大问题自动等同于长答案。
+15. 为了短而删除会改变方向的关键不确定性。
+16. 在现金危机中创造固定的“工资/银行/供应商”通用优先级。
 
 ## 12｜JN Decision Schema｜强制同源
 
@@ -211,12 +215,94 @@ LEVEL 2/3 必须**检查**是否存在有意义的重新设计，但不强制输
 
 - 缺数据统一使用：`待量化` / `建立基线` / `需验证` / `示意`。
 - Renderer 不得添加 Schema 中没有的新结论、新数字、新时间、新 KPI。
-- LEVEL 1 使用短版 Renderer；LEVEL 2/3 使用完整 Dashboard。
+- Interaction Router 只决定展示深度，不得修改 Decision Schema 的核心判断。
 
-## 13｜Text Renderer｜文字格式固定
+## 13｜Interaction Router｜渐进式展开 [ENGINE-C]
+
+**决策复杂度与回答长度是两条不同的轴。**
+
+同一个 Decision Schema 可以选择 QUICK、HIGH-STAKES QUICK 或 FULL 三种展示深度，但同一事实下不得改变决策方向。
+
+### MODE A｜QUICK DECISION
+适用于：
+- 用户只抛出一句真实经营问题；
+- 没有明确要求“详细分析 / 完整报告 / 路线图 / 用 jn-value-engine 完整回答”；
+- 当前信息不足，继续追问会显著改善判断；
+- 即使问题属于 LEVEL 2/3，只要首轮更适合先给方向再补证据，也允许 QUICK。
+
+首轮仅输出：
+1. **判断**：1—3 句；
+2. **真正的问题**：1 句；
+3. **现在先看三件事**：最多 3 条；
+4. **还缺的关键事实**：最多 3 个；
+5. **什么会让我改变判断**：1 句。
+
+目标长度：约 180—350 个中文字。不得为了凑短而删掉决定性不确定性。
+
+### MODE B｜HIGH-STAKES QUICK
+若涉及以下任一情形，且用户只给了少量信息：
+- 破产 / 重整 / 停产 / 账户冻结 / 债务违约；
+- 现金链即将断裂；
+- 控制权、董事会、回购、清算等重大权利结构；
+- 重大并购、出售公司、海外设厂、大额不可逆投资；
+- 其他一旦判断错误会造成严重不可逆后果的情形。
+
+则首轮必须：
+- 优先使用 `HOLD / CONDITIONAL_GO / NEED_MORE_EVIDENCE` 等条件性状态，除非事实已经足以支撑强结论；
+- 保留最多 3 个会改变方向的关键未知数；
+- 明确最主要尾部风险；
+- 至少保留 1 条反转条件；
+- 不生成固定利益相关者优先级；
+- 不因“重大”而自动输出完整十模块。
+
+### MODE C｜FULL DECISION
+适用于：
+- 用户明确说“用 jn-value-engine 回答”；
+- 用户明确要求详细、完整、路线图、报告；
+- QUICK 后用户要求“展开 / 详细说 / 给路线图”；
+- 重大决策且信息已足以支撑完整判断。
+
+使用完整 10 模块 Dashboard，并按规则生成同源路线图。
+
+### 路由优先级
+1. 用户明确要求 FULL → FULL。
+2. 高风险 + 信息明显不足 → HIGH-STAKES QUICK。
+3. 普通一句话探索式提问 → QUICK。
+4. 高风险 + 信息充足 → FULL。
+5. QUICK 后补充关键数据 → 重新判断是否升级 FULL。
+
+原则：**QUICK ≠ LEVEL 1；FULL ≠ LEVEL 3。**
+
+## 14｜Text Renderer｜文字格式固定
+
+### QUICK / HIGH-STAKES QUICK 固定模板
+
+### 判断
+> {1—3 句核心结论}
+
+### 真正的问题
+{1 句重新定义}
+
+### 现在先看三件事
+- {关键1}
+- {关键2}
+- {关键3}
+
+### 还缺的 1—3 个关键事实
+1. {事实1}
+2. {事实2}
+3. {事实3}
+
+### 什么会让我改变判断
+{1 句}
+
+HIGH-STAKES QUICK 额外增加：
+
+### 最大尾部风险
+{1 句最严重且不可逆的风险}
 
 ### LEVEL 1｜FAST 版
-仅输出：
+若问题本身是 LEVEL 1 且无需 QUICK 的证据追问，可仅输出：
 1. 决策结论
 2. 核心计算/经济逻辑
 3. 主要风险
@@ -285,7 +371,7 @@ LEVEL 2/3 必须**检查**是否存在有意义的重新设计，但不强制输
 固定列出 2—4 条 `reversal_conditions`。
 
 ### 文字纪律
-- 不改变模块名称和顺序。
+- 不改变 FULL 模块名称和顺序。
 - 不根据 Agent 个性增加“我的看法/战略建议/深度洞察”等自创标题。
 - 表格列名固定。
 - 核心结论不超过 80 个中文字符。
@@ -293,10 +379,11 @@ LEVEL 2/3 必须**检查**是否存在有意义的重新设计，但不强制输
 - 每个阶段动作最多 4 条。
 - 指标最多 5 个，Gate 最多 4 个。
 - 不展示内部 ENGINE-C 英文模块名。
+- QUICK 不能只是 FULL 的截断版；必须优先保留方向、关键矛盾、关键未知数和反转条件。
 
-## 14｜Visual Renderer｜路线图不自由设计
+## 15｜Visual Renderer｜路线图不自由设计
 
-### 14.1 首选：确定性 SVG/HTML Renderer
+### 15.1 首选：确定性 SVG/HTML Renderer
 若宿主 Agent 能创建 SVG、HTML、Canvas 或程序化矢量图，**必须优先使用固定 JN 模板进行确定性渲染**，不得调用生成式图片模型重新设计版式。
 
 固定画布：**1200 × 1800 px，竖版 2:3。**
@@ -314,10 +401,10 @@ LEVEL 2/3 必须**检查**是否存在有意义的重新设计，但不强制输
 
 布局不得因 Agent 不同而改变。
 
-### 14.2 次选：生成式图片工具
+### 15.2 次选：生成式图片工具
 只有宿主无法程序化生成 SVG/HTML 时，才允许调用图片模型。此时必须严格遵守后面的 `JN VISUAL DESIGN SYSTEM`，并把 Schema 作为唯一内容来源。
 
-## 15｜JN VISUAL DESIGN SYSTEM｜固定品牌视觉
+## 16｜JN VISUAL DESIGN SYSTEM｜固定品牌视觉
 
 ### 画布与气质
 - 竖版 2:3，默认 1200×1800。
@@ -391,12 +478,18 @@ LEVEL 2/3 必须**检查**是否存在有意义的重新设计，但不强制输
 ### 生成式图片 fallback 固定提示词骨架
 `Create a premium Chinese boardroom-consulting infographic in the JN Value Engine visual system. Vertical 2:3 composition, fixed 1200x1800-like layout. Dark navy hero banner with subdued industry-specific photographic background, white and gold Chinese headline, small JN gold-outline square logo. Main body on white / very light blue-gray background using rounded consulting cards, numbered pale-gold section tabs, navy typography, restrained gold accents, green recommendation states, red risk states, consistent flat business icons, strong grid, generous whitespace. Fixed information order: conclusion, real question/key conflicts/current situation, A-B-C comparison, three-stage roadmap, KPI cards, four decision gates, next steps, navy footer brand bar. No cyberpunk, neon, cartoon, flashy 3D or dense tiny text. Use only fields from the supplied JN Decision Schema. Do not invent metrics, ROI, timelines or budgets; use 待量化 / 建立基线 / 需验证 when absent.`
 
-## 16｜输出顺序｜强制
+## 17｜输出顺序｜强制
 
-### LEVEL 1
-先输出短版文字；默认不生成路线图，除非用户明确要求。
+### QUICK
+只输出 QUICK 固定文字模板；默认不生成路线图。
 
-### LEVEL 2/3
+### HIGH-STAKES QUICK
+输出条件性短答 + 最大尾部风险；默认不生成路线图。
+
+### LEVEL 1 FAST
+输出短版文字；默认不生成路线图，除非用户明确要求。
+
+### FULL（LEVEL 2/3 或用户明确要求）
 **PART 1｜按 Text Renderer 输出完整文字版**
 
 ↓
@@ -405,9 +498,21 @@ LEVEL 2/3 必须**检查**是否存在有意义的重新设计，但不强制输
 
 不得只出图；不得先图后文。图片不得二次思考或新增结论。
 
-同一问题的小补充可只更新文字；形成新阶段性判断或再次明确调用 `jn-value-engine` 时再生成新路线图。
+同一问题的小补充可只更新文字；形成新阶段性判断、用户要求展开，或再次明确调用 `jn-value-engine` 时再生成新路线图。
 
-## 17｜禁止行为
+## 18｜Interaction Failure Modes
+
+必须主动检查：
+- `QUICK_OVERSIMPLIFICATION`：为了短而把真正问题简化错。
+- `QUICK_OVERCONFIDENCE`：信息不足却给强结论。
+- `QUICK_GENERIC`：短，但变成任何企业都能套的废话。
+- `QUICK_FULL_DRIFT`：同一事实下 QUICK 与 FULL 方向不一致。
+- `QUICK_TOO_LONG`：所谓 QUICK 已接近 FULL。
+- `HIGH_STAKES_FLATTENING`：高风险问题被压缩成机械排序或单一动作。
+
+若出现任一 Failure，优先升级到 HIGH-STAKES QUICK 或 FULL，而不是继续压缩。
+
+## 19｜禁止行为
 
 - 不得让 Renderer 再次独立分析问题。
 - 不得为了视觉完整性补造事实、数据、时间或指标。
@@ -422,18 +527,15 @@ LEVEL 2/3 必须**检查**是否存在有意义的重新设计，但不强制输
 - 不得声称 ENGINE-C 模块来自任何特定教师本人。
 - 不自动生成 PDF。
 
-## 18｜v3.1 版本说明
+## 20｜v3.2 版本说明
 
-v3.1 在 v3.0 的强协议架构上升级 Decision Engine，主要新增/强化：
-- Complexity Gate 2.0：简单问题不再强行套完整战略框架；
-- Minimum Evidence Gate：关键信息不足时输出条件性判断，避免伪精确；
-- Qualitative Before Quantitative：先理解赛道/位置/模式/阶段，再解释数字；
-- Quality Before Quantity：从总量进一步穿透结构、质量与可持续性；
-- Trace to Value：统一“数字 → 经营 → 模式 → 价值”的穿透链；
-- Redesign Materiality Gate：检查是否值得重设计，但不为了设计而设计；
-- Capability Transfer：第二曲线先看核心能力迁移与终局能力匹配；
-- Forecast Router：区分历史外推、里程碑实物期权与终局反推；
-- Capital & Transaction：资本同时看 Money / Rights / Resources / Constraints；
-- Off-balance Value & Risk：重大交易增加表外价值与风险扫描。
+v3.2 不改变 v3.1 的 Decision Engine，主要升级真实聊天场景的交互效率：
+- 新增 Interaction Router，把“怎么想”与“首轮展示多少”解耦；
+- 新增 QUICK DECISION：自然的一句话经营问题先给方向、真正问题、3个关键判断、最小信息集和反转条件；
+- 新增 HIGH-STAKES QUICK：重大但信息不足的问题短答时必须保留条件性判断、关键未知数和最大尾部风险；
+- 明确 QUICK ≠ LEVEL 1、FULL ≠ LEVEL 3，复杂度与回答长度分离；
+- 用户明确调用 jn-value-engine、要求详细分析/路线图/报告时，直接使用 FULL；
+- QUICK 与 FULL 必须读取同一 Decision Schema，在同一事实下不得出现方向漂移；
+- QUICK 默认不生成路线图，FULL 继续沿用固定 10 模块 Dashboard + 同源视觉路线图。
 
-开发阶段以真实企业问题、回归集和失败模式库进行单窗口受控模拟测试。模拟结果仅用于版本工程筛选，不等同于独立跨 Agent 实验或现实决策有效性证明。
+开发阶段完成了 QUICK vs FULL、5道高风险反向题以及混合路由的单窗口受控模拟测试。相关结果仅用于版本工程筛选，不等同于独立跨 Agent 实验或现实决策有效性证明。
