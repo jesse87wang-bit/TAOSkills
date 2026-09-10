@@ -1,31 +1,53 @@
-# JN VALUE ENGINE — NON-NEGOTIABLE DELIVERY CONTRACT v4
+# JN VALUE ENGINE — NON-NEGOTIABLE DELIVERY CONTRACT v5
 
 This contract is mandatory for every normal invocation of `jn-value-engine`.
 
 # 1｜固定流水线：文字 → 文字质检 → 路线图 → 成图质检 → DONE
 
-正常调用只有一条合法路径：
+唯一正常路径：
 
 `USER QUESTION`
 → `INTERNAL DECISION / SCHEMA`
 → `DELIVER COMPLETE TEXT 01–10`
 → `TEXT_QA`
 → `TEXT_QA = PASS`
-→ `CONTINUE_EXECUTION = TRUE`
+→ `SELECT SAFE VISUAL RENDERER`
 → `GENERATE JN ROADMAP`
 → `VISUAL_QA`
 → `VISUAL_QA = PASS`
 → `DONE`
 
-任何一步失败都不得宣告 DONE。
-
 完成条件：
 
 `DONE = TEXT_VISIBLE_COMPLETE && TEXT_QA_PASS && ROADMAP_VISIBLE_COMPLETE && VISUAL_QA_PASS && TEXT_VISIBLE_BEFORE_ROADMAP`
 
-# 2｜DELIVERABLE A：先完整文字
+文字完成不是 DONE；图片生成完成也不是 DONE。
 
-必须先向用户展示：
+# 2｜最重要的新规则：先判断宿主如何真正显示内容
+
+不要再假设“commentary/assistant pre-tool 文本”一定会像普通最终回答一样保留在用户界面。
+
+在任何视觉工具调用前，必须判断当前宿主的真实渲染行为：
+
+## A. 若宿主支持“先发送正常用户可见文字，再继续调用视觉工具”
+允许：
+`VISIBLE TEXT → VISUAL TOOL → IMAGE`
+
+## B. 若宿主会隐藏、折叠、替换、弱化 pre-tool commentary，或 visual tool 输出会覆盖/抢在文字前显示
+则禁止使用会破坏顺序的生成式图片调用路径。
+
+必须改用**确定性离屏渲染路径**：
+- SVG / HTML / Canvas / Python/PIL 等可先在后台生成文件、且不会提前向用户展示工具输出的 renderer；
+- 最终把完整文字和路线图放在同一用户可见交付中，顺序固定为“文字在上，路线图在下”；
+- 如果平台支持将生成文件以内嵌图片/附件放在文字之后，优先如此。
+
+核心原则：**选择 renderer 必须服务于真实 UI 顺序，而不是反过来。**
+
+如果 image-generation 工具会导致“图先出现、文字后出现”，该工具在本宿主的标准 JN 交付中视为 `UNSAFE_RENDERER_FOR_ORDER`，不得使用。
+
+# 3｜DELIVERABLE A：先完整文字
+
+必须先对用户展示：
 01 决策结论
 02 真正的问题
 03 关键矛盾
@@ -39,138 +61,108 @@ This contract is mandatory for every normal invocation of `jn-value-engine`.
 
 正式输出隐藏所有内部状态码、置信度、LEVEL、ENGINE-C、Router 等工程术语。
 
-# 3｜TEXT_QA：文字生成后、路线图生成前的强制检查
+# 4｜TEXT_QA：必须识别实际文字
 
-文字 01–10 已经生成后，必须先识别/读取刚刚生成的文字内容，以用户实际可见版本为准，而不是只相信内部草稿。逐项检查：
+文字 01–10 生成后，重新读取实际交付文本并检查：
 
 ## A. 完整性
-- [ ] 01–10 十个模块全部存在且顺序正确。
-- [ ] 没有模块被“见下图”“略”等替代。
-- [ ] 结论能够独立阅读。
+- 01–10 全部存在且顺序正确；
+- 没有模块被“见下图”“略”替代；
+- 结论可独立阅读。
 
 ## B. 决策一致性
-- [ ] 01 的核心结论与 04 的方案排序一致。
-- [ ] 06 的三阶段路线支持 01 的结论。
-- [ ] 08 的 Gate 与 10 的反转条件不互相冲突。
-- [ ] 不存在前文推荐、后文否定同一方案的逻辑漂移。
+- 01 核心结论与 04 方案排序一致；
+- 06 路线支持 01 结论；
+- 08 Gate 与 10 反转条件一致；
+- 无前后逻辑漂移。
 
 ## C. 证据纪律
-- [ ] 用户未提供的数据没有被编造。
-- [ ] 未知项统一使用“待量化 / 建立基线 / 需验证”。
-- [ ] 没有凭空出现行业均值、ROI、概率、预算、月份、KPI 目标。
-- [ ] 用户给出的关键数字被正确保留，不擅自改写。
+- 不编造数据、预算、ROI、概率、月份或 KPI；
+- 未知项写“待量化 / 建立基线 / 需验证”；
+- 用户关键数字准确保留。
 
 ## D. 用户语言
-- [ ] 不出现 HOLD / CONDITIONAL_GO / NEED_MORE_EVIDENCE / LEVEL / ENGINE-C / Router / confidence 等内部语言。
-- [ ] 结论是企业经营者可直接理解的自然语言。
-- [ ] 表格和段落不存在明显重复、残句、错别字或术语混乱。
+- 不出现内部代码/工程术语；
+- 无明显错别字、残句、重复和术语混乱。
 
 ## E. 可视化就绪
-- [ ] 已明确 1 条核心结论。
-- [ ] 已明确真正的问题。
-- [ ] 已明确最多 3 个关键矛盾/痛点。
-- [ ] A/B/C 方案及排序已确定（若三方案有意义）。
-- [ ] 三阶段路线已确定。
-- [ ] 3–5 个指标已确定或标记待量化。
-- [ ] 4 个 Gate 已确定。
-- [ ] 3–4 个下一步动作已确定。
+- 核心结论、真正问题、关键矛盾、A/B/C、阶段、指标、Gate、下一步都已明确。
 
-### TEXT_QA 判定
-所有必要项通过：`TEXT_QA = PASS`，必须继续生成路线图。
-任何必要项失败：`TEXT_QA = FAIL`，先修正文字，再重新检查；不得直接生图。
+`TEXT_QA = FAIL` → 修正文案 → 再检查，禁止生图。
+`TEXT_QA = PASS` → 必须继续选择安全 renderer。
 
-# 4｜强制继续规则
+# 5｜第三阶段：选择安全 Visual Renderer
 
-`TEXT_QA = PASS` 后，只检查用户是否明确说“不要图 / 只要文字 / 先别生成图”。
+优先级按以下顺序：
 
-若没有明确 opt-out：
+1. **确定性 SVG / HTML / Canvas / Python/PIL 渲染**：优先，用于固定模板、中文文字和严格版式；
+2. 其他不会提前显示工具输出、可以最终嵌在文字后的可控 renderer；
+3. 生成式图片工具：仅当宿主能保证文字已真实显示且不会被隐藏/覆盖时使用。
 
-**下一动作必须是视觉工具调用。不得 STOP、RETURN、FINALIZE、WAIT_FOR_USER。**
+不得为了“必须有图”而使用会导致图先文后的工具。
 
-文字完成只是中间状态，不是任务完成。
+# 6｜DELIVERABLE B：JN 企业价值路线图
 
-# 5｜DELIVERABLE B：JN 企业价值路线图
+路线图只使用通过 TEXT_QA 的同一份 Decision Schema，不重新判断。
 
-路线图必须使用通过 TEXT_QA 的同一份文字/Decision Schema，只做视觉压缩，不重新判断。
-
-固定信息结构：
+固定结构：
 Hero → 01 决策结论 → 02 真正的问题 / 03 关键矛盾 / 04 当前痛点 → 05 A/B/C 方案对比 → 06 三阶段路线 → 07 KPI → 08 决策闸门 → 09 下一步 → Footer。
 
-固定品牌：`JN 企业价值引擎`。
+品牌：`JN 企业价值引擎`。
 Footer：`jn-value-engine` + `从问题到价值，从判断到行动`。
 
 默认竖版 2:3，约 1200×1800。
+固定色板：深海军蓝 #0E2A45；次级海军蓝 #123A5A；文字深蓝 #14324A；白 #FFFFFF；浅灰蓝 #F4F7FA；分隔线 #DCE4EB；金色 #D6A33D；浅金 #FFF3D6；推荐绿 #21A657/#EAF7EE；风险红 #E34E4E/#FDECEC；信息蓝 #3D78B7。
 
-固定色板：深海军蓝 #0E2A45；次级海军蓝 #123A5A；文字深蓝 #14324A；白 #FFFFFF；浅灰蓝 #F4F7FA；分隔线 #DCE4EB；金色 #D6A33D；浅金 #FFF3D6；推荐绿 #21A657 / #EAF7EE；风险红 #E34E4E / #FDECEC；信息蓝 #3D78B7。
+固定视觉：低饱和行业写实 Hero；商业咨询/董事会PPT；浅金编号；白色圆角卡；A/B/C等宽；推荐绿、不推荐红、有条件金；三阶段深蓝→中蓝→浅蓝连续箭头；KPI横卡；4个金色Gate；深蓝Footer；扁平商务图标。
 
-固定风格：商业咨询/董事会 PPT；低饱和行业 Hero；浅金编号；白色圆角卡片；A/B/C 等宽；推荐绿、不推荐红、有条件金；三阶段深蓝→中蓝→浅蓝连续箭头；KPI 横卡；4 个金色 Gate；深蓝 Footer；扁平商务图标。禁止自由换主题、赛博朋克、霓虹、卡通、杂志拼贴、闪亮3D和 emoji 混搭。
+禁止赛博朋克、霓虹、卡通、杂志拼贴、闪亮3D、emoji混搭和自由改版。
 
-# 6｜VISUAL_QA：成图之后的强制检查
+# 7｜VISUAL_QA：必须识别最终成图
 
-路线图生成后必须识别/检查最终成图本身，而不是只检查生成 prompt。优先使用宿主的原生视觉理解直接读取图片；不要默认依赖 OCR。只有原生视觉无法可靠读取时才考虑 OCR。
+成图后必须检查最终图片，不只检查 prompt。
+优先使用宿主原生视觉理解；不要默认 OCR，只有必要时才使用 OCR。
 
-逐项检查：
+## A｜顺序与交付
+- 完整文字实际显示在图之前；
+- 路线图已生成且可见。
 
-## A. 交付顺序
-- [ ] 完整文字实际显示在路线图之前。
-- [ ] 路线图确实已经生成并可见。
+## B｜文图同源
+- 核心结论与文字01同向；
+- A/B/C与文字04一致；
+- 三阶段与文字06一致；
+- KPI只来自文字07；
+- Gate只来自文字08；
+- 下一步只来自文字09；
+- 不新增事实、数字、时间、预算、ROI或KPI。
 
-## B. 文图同源
-- [ ] 图片核心结论与文字 01 完全同向。
-- [ ] A/B/C 方案及推荐关系与文字一致。
-- [ ] 三阶段路线与文字 06 一致。
-- [ ] KPI/指标只来自文字 07。
-- [ ] Gate 只来自文字 08。
-- [ ] 下一步只来自文字 09。
-- [ ] 图片没有新增文字版不存在的数字、时间、预算、ROI、KPI 或事实。
+## C｜文字准确
+- 主标题、模块标题、关键文案无明显错字/乱码；
+- 品牌为 `JN 企业价值引擎`；
+- Footer正确；
+- 用户关键数字一致；
+- 无伪汉字、错误偏旁、严重字形变形；
+- 无内部状态码。
 
-## C. 文字准确性
-- [ ] 标题无错别字、漏字、重复字。
-- [ ] 品牌必须为“JN 企业价值引擎”。
-- [ ] Footer 必须为 `jn-value-engine` + `从问题到价值，从判断到行动`。
-- [ ] 关键数字与文字版一致。
-- [ ] 不出现乱码、伪汉字、错误偏旁、明显字体变形。
-- [ ] 不出现内部状态码或工程术语。
+## D｜信息架构
+01决策结论、02真正的问题、03关键矛盾、04当前痛点、05方案对比、06三阶段路线、07KPI、08决策闸门、09下一步全部存在。
 
-## D. 信息完整性
-- [ ] 01 决策结论存在。
-- [ ] 02 真正的问题存在。
-- [ ] 03 关键矛盾存在。
-- [ ] 04 当前痛点存在。
-- [ ] 05 方案对比存在。
-- [ ] 06 三阶段路线存在。
-- [ ] 07 KPI 存在。
-- [ ] 08 决策闸门存在。
-- [ ] 09 下一步存在。
+## E｜视觉规范
+- 2:3竖版商业咨询信息图；
+- 深海军蓝+金+白/浅灰蓝；
+- Hero行业相关、低饱和；
+- 卡片、间距、层级、对齐清晰；
+- A/B/C三列等宽；
+- 三阶段连续流程；
+- 4个金色Gate；
+- 无严重拥挤、遮挡、裁切、溢出或不可读小字。
 
-## E. 视觉规范
-- [ ] 2:3 竖版商业咨询信息图。
-- [ ] 深海军蓝 + 金色 + 白/浅灰蓝为主。
-- [ ] Hero 与行业相关且低饱和。
-- [ ] 卡片、间距、对齐、层级清楚。
-- [ ] A/B/C 三列等宽且状态色正确。
-- [ ] 三阶段路线为蓝色连续流程。
-- [ ] 4 个 Gate 为金色节点。
-- [ ] 没有赛博朋克、霓虹、卡通、杂志拼贴或自由改版。
-- [ ] 字体大小足以阅读，没有严重拥挤、遮挡、裁切或溢出。
+若关键结论/数字错误、文图漂移、编造事实、缺核心模块、明显错字乱码、品牌错误或排版不可读：`VISUAL_QA = FAIL`。
 
-### VISUAL_QA 判定
-全部关键项通过：`VISUAL_QA = PASS`，本次调用才允许 DONE。
+FAIL → 修图/重新生成 → 再次 VISUAL_QA，不得把失败图当正式交付。
 
-出现以下任一情况直接 `VISUAL_QA = FAIL`：
-- 关键结论错误或文图不一致；
-- 关键数字错误；
-- 新增不存在的事实/预算/时间/KPI；
-- 主要标题或关键模块出现错字/乱码；
-- 缺失核心模块；
-- 品牌/视觉系统明显偏离；
-- 严重排版不可读。
+# 8｜100分 QA
 
-若 FAIL：必须修图/重新生成 → 再次 VISUAL_QA，直到 PASS 或达到宿主可执行限制。不得把明显失败图当正式交付。
-
-# 7｜建议评分制
-
-除硬性 FAIL 项外，对每次交付做 100 分检查：
 - 文字完整与逻辑：20
 - 决策一致性与证据纪律：20
 - 文图同源：20
@@ -178,37 +170,42 @@ Footer：`jn-value-engine` + `从问题到价值，从判断到行动`。
 - 视觉规范与可读性：15
 - 顺序与交付完整：10
 
-**90–100：PASS，可正式交付**
-**80–89：需修正后交付**
-**<80：FAIL，必须重做**
+90–100：PASS
+80–89：修正后交付
+<80：FAIL
 
-任何硬性 FAIL 项出现，即使总分 ≥90，也必须 FAIL。
+任何硬性 FAIL 项存在，即使总分≥90也不得通过。
 
-# 8｜例外
+# 9｜强制继续与例外
 
-只有用户明确要求才改变：
-- `只要文字 / 不要图 / 先别生成图` → 文字 + TEXT_QA 后可结束。
-- `只要路线图 / 不要文字` → 可跳过文字交付，但仍必须做 VISUAL_QA。
-- `简版 / 30秒版`且未拒绝图片 → 简版文字 → TEXT_QA → 路线图 → VISUAL_QA。
+只要 TEXT_QA PASS 且用户没有明确说“只要文字/不要图/先别生成图”，就必须继续生成路线图；不得停止、询问或等待下一条用户消息。
 
-沉默、短问题、信息不足、高风险、长文本、工具不便都不是例外。
+只有明确用户指令可改变：
+- 只要文字/不要图/先别生成图 → 文字 + TEXT_QA 后结束；
+- 只要路线图/不要文字 → 路线图 + VISUAL_QA；
+- 简版/30秒版但未拒绝图片 → 简版文字 + TEXT_QA → 图 + VISUAL_QA。
 
-# 9｜Failure Labels
+# 10｜Failure Labels
 
-- `TEXT_QA_INCOMPLETE`
-- `TEXT_QA_LOGIC_DRIFT`
-- `TEXT_QA_FABRICATION`
-- `TEXT_QA_INTERNAL_LEAK`
-- `DELIVERY_TEXT_MISSING`
-- `DELIVERY_ROADMAP_MISSING`
-- `DELIVERY_ORDER_VIOLATION`
-- `DELIVERY_PREMATURE_STOP`
-- `DELIVERY_SCHEMA_DRIFT`
-- `VISUAL_QA_TEXT_ERROR`
-- `VISUAL_QA_NUMBER_ERROR`
-- `VISUAL_QA_MISSING_SECTION`
-- `VISUAL_QA_STYLE_DRIFT`
-- `VISUAL_QA_LAYOUT_FAILURE`
-- `VISUAL_QA_FABRICATION`
+`TEXT_QA_INCOMPLETE`
+`TEXT_QA_LOGIC_DRIFT`
+`TEXT_QA_FABRICATION`
+`TEXT_QA_INTERNAL_LEAK`
+`DELIVERY_TEXT_MISSING`
+`DELIVERY_ROADMAP_MISSING`
+`DELIVERY_ORDER_VIOLATION`
+`DELIVERY_PREMATURE_STOP`
+`DELIVERY_SCHEMA_DRIFT`
+`UNSAFE_RENDERER_FOR_ORDER`
+`VISUAL_QA_TEXT_ERROR`
+`VISUAL_QA_NUMBER_ERROR`
+`VISUAL_QA_MISSING_SECTION`
+`VISUAL_QA_STYLE_DRIFT`
+`VISUAL_QA_LAYOUT_FAILURE`
+`VISUAL_QA_FABRICATION`
 
-Any failure means the invocation is not DONE.
+任一 Failure 存在，本次调用不得判定 DONE。
+
+# 11｜外部交付原则
+
+QA过程默认内部执行，不展示状态码、评分过程和工程术语。用户只应看到：**完整文字 → 合格路线图**。
