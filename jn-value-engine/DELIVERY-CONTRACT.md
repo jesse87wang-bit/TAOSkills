@@ -1,39 +1,40 @@
-# JN VALUE ENGINE — NON-NEGOTIABLE DELIVERY CONTRACT
+# JN VALUE ENGINE — NON-NEGOTIABLE DELIVERY CONTRACT v2
 
-This contract is mandatory for every normal invocation of `jn-value-engine` and has higher priority than brevity, routing, complexity, convenience, or presentation preferences inferred by the Agent.
+This contract is mandatory for every normal invocation of `jn-value-engine` and overrides brevity, routing, complexity, convenience, and default tool-call habits.
+
+## The key implementation rule
+
+**The complete text must be emitted as a USER-VISIBLE assistant message BEFORE the visual/image tool call is issued.**
+
+It is NOT sufficient to internally draft the text and then call the image tool before sending the text in a later final message. If the host UI renders tool output before the final answer, placing the text only in the final answer violates this contract.
+
+Therefore the required runtime sequence is:
+
+`USER QUESTION`
+→ `INTERNAL DECISION / SCHEMA`
+→ `USER-VISIBLE TEXT MESSAGE (01–10)`
+→ `TEXT_VISIBLE_ACK = TRUE`
+→ `IMAGE/VISUAL TOOL CALL`
+→ `ROADMAP VISIBLE`
+→ `DONE`
+
+### Host/channel implementation
+If the host supports a user-visible pre-tool assistant/commentary message, **put the entire 01–10 text answer there first**, then call the visual tool. Do NOT defer the 01–10 answer to the final channel after the image tool.
+
+If a host genuinely cannot display user-visible text before a visual tool call, the Agent must not claim the required order was satisfied. It should use a rendering path that can be invoked after visible text, or report the host limitation rather than silently reversing the order.
 
 ## Definition of DONE
 
-A normal `jn-value-engine` invocation is **NOT COMPLETE** until BOTH deliverables have been visibly delivered to the user in this exact order:
+`DONE = TEXT_VISIBLE_COMPLETE && ROADMAP_VISIBLE_COMPLETE && TEXT_RENDER_TIMESTAMP < ROADMAP_RENDER_TIMESTAMP`
 
-1. **DELIVERABLE A — COMPLETE TEXT DECISION**
-2. **DELIVERABLE B — JN VISUAL ROADMAP**
-
-Formally:
-
-`DONE = TEXT_COMPLETE && ROADMAP_COMPLETE && TEXT_VISIBLE_BEFORE_ROADMAP`
-
-If only text exists: `NOT DONE`.
-If only roadmap exists: `NOT DONE`.
-If roadmap appears before text: `DELIVERY FAILURE`.
-
-## Mandatory state machine
-
-`USER_QUESTION`
-→ `INTERNAL_DECISION_SCHEMA_READY`
-→ `TEXT_RENDERING`
-→ `TEXT_VISIBLE_TO_USER`
-→ `TEXT_COMPLETION_CHECK = PASS`
-→ `VISUAL_TOOL_CALL_ALLOWED`
-→ `ROADMAP_RENDERING`
-→ `ROADMAP_VISIBLE_TO_USER`
-→ `DONE`
-
-There is no legal transition from `USER_QUESTION`, `INTERNAL_DECISION_SCHEMA_READY`, or `TEXT_RENDERING` directly to `ROADMAP_RENDERING`.
+- text only → `DELIVERY_ROADMAP_MISSING`
+- roadmap only → `DELIVERY_TEXT_MISSING`
+- roadmap visually appears first → `DELIVERY_ORDER_VIOLATION`
+- text was internally prepared but not visible before tool call → `DELIVERY_ORDER_VIOLATION`
 
 ## Deliverable A — complete text first
 
-The text must visibly contain all 10 sections before any image tool is called:
+Before ANY image/visual tool call, the user must already be able to read all ten sections:
 
 01 决策结论
 02 真正的问题
@@ -46,31 +47,27 @@ The text must visibly contain all 10 sections before any image tool is called:
 09 下一步行动
 10 什么会让我改变判断
 
-The text is a standalone decision answer. Do not replace any section with “see roadmap below”.
+Formal output must hide internal codes and engineering terms, including HOLD, CONDITIONAL_GO, NEED_MORE_EVIDENCE, LEVEL 1/2/3, ENGINE-C, Router names and confidence fields.
 
-Formal output must hide internal codes and engineering terms, including but not limited to: HOLD, CONDITIONAL_GO, NEED_MORE_EVIDENCE, LEVEL 1/2/3, ENGINE-C, Router names, internal confidence fields.
+## Mandatory pre-tool checkpoint
 
-## Text completion checkpoint
+Immediately before calling image generation / SVG / HTML / Canvas / visual renderer, verify:
 
-Before invoking ANY image generation, image editing, SVG/HTML visual renderer, or other roadmap tool, verify all are true:
-
-- [ ] Sections 01–10 are already visible to the user.
-- [ ] The core recommendation is stated in natural business language.
-- [ ] A/B/C ranking is fixed if alternatives are material.
-- [ ] Roadmap stages and gates are fixed.
-- [ ] Metrics use only known data; unknowns say 待量化 / 建立基线 / 需验证.
-- [ ] Internal status codes and engineering terminology are absent from user-facing copy.
+- [ ] 01–10 have ALREADY BEEN SENT in a user-visible assistant message.
+- [ ] The user can see the recommendation before the roadmap starts rendering.
+- [ ] No internal status codes appear in the visible text.
+- [ ] A/B/C ranking is fixed when material.
+- [ ] Roadmap stages, metrics, gates and next actions are fixed.
+- [ ] Unknown values use 待量化 / 建立基线 / 需验证.
 - [ ] Reversal conditions are present.
 
-If any box is false: **DO NOT CALL THE VISUAL TOOL. Finish the text first.**
+If the first checkbox is false, **THE IMAGE TOOL CALL IS FORBIDDEN.**
 
-## Deliverable B — roadmap is mandatory after text
+## Deliverable B — mandatory roadmap after text
 
-Immediately after Deliverable A is complete, the Agent MUST continue to Deliverable B in the same invocation/turn when the host supports visual generation.
+Once Deliverable A is visibly complete, continue automatically to roadmap generation. Do not stop, ask permission, or wait for another user turn unless the user explicitly opted out of the image.
 
-Do not stop after the text. Do not ask “要不要生成路线图?”. Do not wait for another user message. Do not treat the text as completion.
-
-The roadmap is a visual compression of the exact same Decision Schema. It may not introduce a new conclusion, new option, new metric, new number, new budget, new timeline, or new recommendation.
+The roadmap must use the same Decision Schema and may not add a new conclusion, option, metric, number, budget, timeline or recommendation.
 
 ## Fixed JN visual system
 
@@ -86,24 +83,24 @@ Palette: dark navy #0E2A45, secondary navy #123A5A, text navy #14324A, white #FF
 
 Use a subdued realistic industry-specific hero image, consulting/boardroom PPT aesthetics, pale-gold numbered tabs, equal-width A/B/C cards, blue three-stage arrows, KPI cards, four gold decision gates, and navy footer. No cyberpunk, neon, cartoon, magazine collage, flashy 3D, emoji icon mixing, or free redesign of information architecture.
 
-If the text did not establish dates, budgets, ROI, benchmark values, or target values, the roadmap MUST NOT invent them.
+Do not invent dates, budgets, ROI, benchmark values or target values not established in Deliverable A.
 
 ## Exceptions
 
-The two-deliverable contract may be changed only by an explicit user instruction such as:
+Only explicit user instructions can change the contract:
 - “只要文字 / 不要图” → text only.
 - “只要路线图 / 不要文字” → roadmap only.
 - “先别生成图” → stop after text for that invocation.
-- “简版/30秒版” without saying no image → shortened text may be used, but roadmap remains required unless the user explicitly opts out of the image.
+- “简版/30秒版” without opting out of image → shorter text first, roadmap still follows.
 
-Silence is NOT an opt-out. A short question is NOT an opt-out. Missing data is NOT an opt-out. High risk is NOT an opt-out. Tool inconvenience is NOT an opt-out.
+Silence, short questions, missing data, high risk, tool inconvenience, or model preference are NOT opt-outs.
 
 ## Failure labels
 
-- `DELIVERY_TEXT_MISSING`: roadmap delivered without full text.
-- `DELIVERY_ROADMAP_MISSING`: full text delivered but roadmap omitted.
-- `DELIVERY_ORDER_VIOLATION`: roadmap shown before full text.
-- `DELIVERY_SCHEMA_DRIFT`: roadmap changes the text decision.
-- `DELIVERY_INTERNAL_LEAK`: internal status/engineering terms appear in formal output.
+- `DELIVERY_TEXT_MISSING`
+- `DELIVERY_ROADMAP_MISSING`
+- `DELIVERY_ORDER_VIOLATION`
+- `DELIVERY_SCHEMA_DRIFT`
+- `DELIVERY_INTERNAL_LEAK`
 
-Any one of these means the invocation failed the JN delivery contract even if the underlying analysis is correct.
+Any failure means the invocation failed even if the analysis itself was correct.
