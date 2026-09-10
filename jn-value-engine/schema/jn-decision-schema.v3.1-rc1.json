@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "JN Decision Schema v3.1-rc1",
+  "type": "object",
+  "required": ["jn_schema_version", "brand", "complexity", "question_title", "question_subtitle", "executive", "real_question", "key_conflicts", "options", "option_ranking", "value_chain", "roadmap", "metrics", "decision_gates", "next_actions", "reversal_conditions"],
+  "properties": {
+    "jn_schema_version": {"const": "3.1-rc1"},
+    "brand": {"const": "JN 企业价值引擎"},
+    "complexity": {
+      "type": "object",
+      "required": ["level", "reason"],
+      "properties": {
+        "level": {"enum": ["LEVEL_1", "LEVEL_2", "LEVEL_3"]},
+        "reason": {"type": "string"}
+      }
+    },
+    "strategic_context": {
+      "type": "object",
+      "properties": {
+        "lifecycle": {"type": ["string", "null"]},
+        "track": {"type": ["string", "null"]},
+        "position": {"type": ["string", "null"]},
+        "business_model": {"type": ["string", "null"]}
+      }
+    },
+    "number_quality": {
+      "type": ["object", "null"],
+      "properties": {
+        "key_metric": {"type": ["string", "null"]},
+        "composition": {"type": ["string", "null"]},
+        "quality": {"type": ["string", "null"]},
+        "sustainability": {"type": ["string", "null"]}
+      }
+    },
+    "redesign": {
+      "type": ["object", "null"],
+      "properties": {
+        "current_system_problem": {"type": ["string", "null"]},
+        "redesign_option": {"type": ["string", "null"]},
+        "ownership_use_funding_risk_return": {"type": ["string", "null"]}
+      }
+    },
+    "forecast_mode": {
+      "type": ["object", "null"],
+      "properties": {
+        "mode": {"enum": ["FORWARD", "MILESTONE", "ENDGAME", null]},
+        "reason": {"type": ["string", "null"]}
+      }
+    },
+    "question_title": {"type": "string", "maxLength": 36},
+    "question_subtitle": {"type": "string", "maxLength": 80},
+    "executive": {
+      "type": "object",
+      "required": ["decision", "status", "confidence", "core_principle"],
+      "properties": {
+        "decision": {"type": "string", "maxLength": 120},
+        "status": {"enum": ["GO", "CONDITIONAL_GO", "PILOT", "HOLD", "NO_GO", "EXIT", "NEED_MORE_EVIDENCE"]},
+        "confidence": {"enum": ["高", "中高", "中", "低"]},
+        "core_principle": {"type": "string", "maxLength": 60}
+      }
+    },
+    "real_question": {"type": "object", "required": ["surface", "actual"], "properties": {"surface": {"type": "string"}, "actual": {"type": "string"}}},
+    "key_conflicts": {"type": "array", "minItems": 2, "maxItems": 3},
+    "current_situation": {"type": "array", "maxItems": 5},
+    "options": {"type": "array", "minItems": 3, "maxItems": 3},
+    "option_ranking": {"type": "string"},
+    "value_chain": {"type": "array", "minItems": 4, "maxItems": 4},
+    "roadmap": {"type": "array", "minItems": 3, "maxItems": 3},
+    "metrics": {"type": "array", "minItems": 3, "maxItems": 5},
+    "decision_gates": {"type": "array", "minItems": 3, "maxItems": 4},
+    "next_actions": {"type": "array", "minItems": 3, "maxItems": 4},
+    "reversal_conditions": {"type": "array", "minItems": 2, "maxItems": 4},
+    "risks_and_boundaries": {"type": "array", "maxItems": 4}
+  }
+}
