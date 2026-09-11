@@ -1,22 +1,20 @@
 {
   "name": "jn-value-engine",
-  "version": "3.6.1",
+  "version": "3.7.0",
   "entrypoint": "SKILL.md",
   "execution": {
-    "mode": "state_machine",
-    "fail_closed": true
+    "mode": "advisory_workflow",
+    "fail_closed": false
   },
-  "states": [
-    "TRIGGERED",
-    "ANALYZED",
-    "TEXT_RENDERED",
-    "TEXT_VALIDATED",
-    "IMAGE_ALLOWED",
-    "IMAGE_RENDERED",
-    "COMPLETE"
+  "workflow": [
+    "ANALYZE",
+    "RENDER_TEXT",
+    "OPTIONAL_IMAGE",
+    "CONSISTENCY_CHECK"
   ],
-  "hard_gate": "No user-visible process commentary before the formal title; no image generation before TEXT_VALIDATED and MODULE_09_FINISHED; immediately generate the TF roadmap after module 09 with no pause, confirmation, transition, or delayed turn",
-  "visible_output": "FORMAL_TEXT_THEN_TF_ROADMAP_ONLY",
+  "host_authority": "System, developer, user, tool, safety, progress, citation, and final-response rules remain authoritative",
+  "visible_output": "FORMAL_TEXT_WITH_OPTIONAL_TF_ROADMAP",
+  "image_policy": "Generate after the analysis is established when useful and available; preserve the text conclusion; fail gracefully if unavailable",
   "image_template": "TF_WHITE_CONSULTING_REPORT",
   "validator": "tests/validate_output.py"
 }

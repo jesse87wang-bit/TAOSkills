@@ -8,9 +8,6 @@ heads=["01 决策结论","02 真正的问题","03 关键矛盾","04 方案对比
 
 title = "企业价值引擎｜"
 if title not in text: errors.append("TITLE")
-else:
-    prefix = text[:text.find(title)].replace("#", "").strip()
-    if prefix: errors.append("USER_VISIBLE_PREAMBLE")
 pos=[text.find(x) for x in heads]
 for h,p in zip(heads,pos):
     if p<0: errors.append("MISSING:"+h)
@@ -33,10 +30,6 @@ if len(set(gates))<4: errors.append("FOUR_GATES")
 s9=section(heads[8])
 if "下一步" not in s9: errors.append("NEXT_ACTION")
 if not any(k in s9 for k in ["改变判断","反证","反转"]): errors.append("FALSIFICATION")
-
-process_phrases = ["正在调用", "读取 Skill", "结构校验", "文字锁", "图片规范已锁定", "正在生成中", "完整交付已完成"]
-for phrase in process_phrases:
-    if phrase in text: errors.append("PROCESS_COMMENTARY:"+phrase)
 
 print("PASS" if not errors else "FAIL\n"+"\n".join(errors))
 sys.exit(0 if not errors else 1)

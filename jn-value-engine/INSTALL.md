@@ -1,4 +1,4 @@
-# jn-value-engine v3.6.0 安装与使用
+# jn-value-engine v3.7.0 安装与使用
 
 > 企业价值引擎
 
@@ -6,7 +6,7 @@
 
 **安装包中的 `SKILL.md` 是唯一执行真源。**
 
-不要把仓库里的历史协议文件与 v3.6.0 并列成多份最高优先级指令，否则容易重新引入我们刚刚解决的“版本冲突 / 输出漂移”。
+不要把仓库里的历史协议文件与 v3.7.0 并列成多份当前执行说明，否则容易重新引入版本冲突或输出漂移。Skill 始终服从宿主与用户的更高优先级规则。
 
 推荐 clean bundle 结构：
 
@@ -25,13 +25,13 @@ OpenAI Skills 的标准形态是一个包含 `SKILL.md` 和支持资源的可复
 
 推荐方式：
 
-1. 下载 `jn-value-engine-v3.6.0.zip` clean bundle；
+1. 下载 `jn-value-engine-v3.7.0.zip` clean bundle；
 2. 在支持 Skills 安装的 ChatGPT 工作区中上传这个 zip；
 3. 审阅 Skill 内容；
 4. 选择 **Install**；
 5. 安装完成后，用下面的回归案例测试。
 
-不要把整个 `TAOSkills/jn-value-engine` 历史目录原样压成安装包；v3.6.0 clean bundle 应只包含当前唯一执行真源和必要支持文件，避免旧执行协议造成冲突。
+不要把整个 `TAOSkills/jn-value-engine` 历史目录原样压成安装包；v3.7.0 clean bundle 应只包含当前执行说明和必要支持文件，避免旧协议造成冲突。
 
 ## 2. 在 Codex / 其他支持 Agent Skills 的环境中
 
@@ -56,35 +56,31 @@ jn-value-engine/SKILL.md = Single Source of Truth
 新能源设备公司订单和客户都不错，但下游回款太慢，导致拖欠供应商500多万元、资金链断了。应该继续融资还是缩业务？
 ```
 
-合格执行顺序必须是：
+建议执行顺序是：
 
 ```text
-TRIGGERED
-→ ANALYZED
-→ TEXT_RENDERED
-→ TEXT_VALIDATED
-→ IMAGE_ALLOWED
-→ IMAGE_RENDERED
-→ COMPLETE
+ANALYZE
+→ RENDER_TEXT
+→ OPTIONAL_IMAGE
+→ CONSISTENCY_CHECK
 ```
 
-用户可见结果必须严格为：
+默认结果应满足：
 
-1. 先出现标题 `企业价值引擎｜<案例主题>`；
+1. 正式分析使用标题 `企业价值引擎｜<案例主题>`；
 2. 完整输出 01–09；
 3. 04 至少包含 A/B/C；
 4. 06 是分阶段路线图；
 5. 08 恰好 4 个 Gate；
 6. 09 同时包含下一步行动与“什么会让我改变判断”；
-7. 直到第 09 最后一个字符输出完成前，不得调用图片生成；
-8. TEXT VALIDATION 通过后，才生成一张单独的 TF 企业价值路线图；
+7. 图片应基于已经形成的文字分析，不得独立重新判断；
+8. 图片有帮助且工具可用时，生成一张单独的 TF 企业价值路线图；
 9. 图片不得改变文字阶段结论，也不得新增未经验证的数据。
 10. 图片顶部与 Footer 的视觉品牌只使用 `TF`、`TF 企业价值引擎`，不得出现 `JN`；右侧 Skill 署名必须保留 `jn-value-engine`，不得改为 `tf-value-engine`。
 
-只要发生以下任一情况，都判安装/执行失败：
+以下情况属于内容质量失败：
 
-- 先出图；
-- 只有图；
+- 图片替代必要的文字分析；
 - 只有普通自由分析；
 - 少模块或改模块名；
 - A/B 二选一而无第三方案；
@@ -109,7 +105,7 @@ PASS
 
 才代表结构性文字验收通过。
 
-注意：这个 Python validator 是**辅助的确定性检查器**。在聊天产品中，真正的 Image Gate 仍由 `SKILL.md` 的执行协议约束；validator 不能单独阻止某个宿主产品调用图片工具，所以宿主必须正确执行 `SKILL.md`。
+注意：这个 Python validator 是**辅助的确定性内容检查器**，不控制宿主产品的工具调用、进度披露或图片生成时机。
 
 ## 5. 版本管理
 
