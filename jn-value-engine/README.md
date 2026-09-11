@@ -2,33 +2,34 @@
 
 > **企业价值引擎**
 
-`jn-value-engine` 是一个面向企业经营、资本配置与价值创造问题的 AI Skill。它基于《贾宁财务讲义》与《初创企业价值创造与资本战略》课程框架蒸馏，并经过真实企业问题 Benchmark 与红队测试持续迭代。
+`jn-value-engine` 是一个面向企业经营、资本配置与价值创造问题的 AI Skill。用于增长、扩产、新市场、融资、第二曲线、新业务、数字化/AI投资、商业模式、并购、退出、传承与资本配置等企业价值问题。
 
-## v3.0：从 Skill 升级为强协议
+## 安装
 
-v3.0 采用三层结构：
+公开安装说明见：[`INSTALL.md`](./INSTALL.md)
 
-**JN Decision Engine → JN Decision Schema → JN Renderer**
+最快方式：把下面这段发给支持 GitHub / Skills 的 Agent：
 
-这意味着不同 Agent 可以有不同内部推理，但最终必须：
+```text
+请从 GitHub 安装并启用 jn-value-engine：
+https://github.com/jesse87wang-bit/TAOSkills/tree/main/jn-value-engine
 
-1. 先填同一份标准 Decision Schema；
-2. 再从 Schema 渲染固定格式的文字 Dashboard；
-3. 再从同一份 Schema 渲染固定视觉路线图。
+请完整加载整个 jn-value-engine 目录，不要只复制 SKILL.md 的部分内容。安装后用“用 jn-value-engine 回答：……”调用。
+```
 
-因此不会再让每个 Agent 自己决定“怎么排版、怎么画图、哪些模块出现”。
+## 当前交付协议
 
-## 固定输出顺序
+默认一次调用必须在当前对话窗口完成：
 
-**PART 1｜完整文字版 JN Decision Dashboard**
+**PART 1｜九段完整文字分析**
 
 →
 
-**PART 2｜1 张 JN 企业价值路线图**
+**PART 2｜1 张同源 JN 企业价值路线图**
 
-路线图不重新分析问题，只做文字结论的视觉压缩。
+不是先出图，不是只给图，也不是把路线图降级成下载链接。
 
-## 固定文字结构
+## 固定九段文字结构
 
 01 决策结论  
 02 真正的问题  
@@ -38,42 +39,71 @@ v3.0 采用三层结构：
 06 建议路线图  
 07 关键验证指标  
 08 决策闸门  
-09 下一步行动  
-10 什么会让我改变判断
+09 下一步行动 + 什么会让我改变判断
 
-模块名、顺序、表格列名、数量上限在 v3.0 中固定。
+正式输出隐藏内部状态码、工程术语和内部置信度字段。
 
-## 固定视觉结构
+## 决策协议
 
-优先使用 **SVG / HTML 确定性渲染**，而不是每次让图片模型重新设计。
+Skill 通过统一的 Decision Engine / Decision Schema / Renderer 协议，让不同 Agent 即使内部推理不同，也尽量保持一致的：
 
-固定画布：1200 × 1800，2:3。
+1. 问题重构方式；
+2. 价值创造逻辑；
+3. 方案比较标准；
+4. 分阶段行动路线；
+5. 关键验证指标与 Gate；
+6. 最终文字结构；
+7. 最终路线图信息架构与视觉规范。
 
-固定结构：
+## 视觉规范
 
-Hero → 决策结论 → 三列诊断区 → A/B/C方案 → 三阶段路线 → KPI → Gate → 下一步 → Footer。
+当前唯一 canonical visual reference 为仓库中已冻结的 JN 企业价值引擎视觉系统。
 
-固定品牌色：深海军蓝、白、浅灰、金色、推荐绿、风险红。
+核心特征：
 
-生成式图片模型只作为宿主无法程序化渲染时的 fallback。
+- 竖版约 2:3；
+- 顶部行业实景 Hero + 深海军蓝蒙版；
+- `JN 企业价值引擎` 品牌；
+- 白色大标题 + 金色关键词；
+- 右侧手写金句 + 金色手绘线；
+- 高密度咨询式卡片；
+- A/B/C 三张等宽方案卡；
+- 连续蓝色三阶段路线箭头；
+- KPI 横向小卡；
+- 4 个金色决策 Gate；
+- 底部深海军蓝 Footer。
+
+原则：**内容可以变，设计系统不变。**
 
 ## 文件
 
-- [`SKILL.md`](./SKILL.md)：v3.0 核心协议
-- [`schema/jn-decision-schema.json`](./schema/jn-decision-schema.json)：固定 Decision Schema
-- [`renderer/README.md`](./renderer/README.md)：确定性视觉 Renderer 规范
+- [`SKILL.md`](./SKILL.md)：核心执行协议
+- [`INSTALL.md`](./INSTALL.md)：公开安装与分享指南
+- [`schema/jn-decision-schema.json`](./schema/jn-decision-schema.json)：Decision Schema
+- [`renderer/README.md`](./renderer/README.md)：视觉 Renderer 规范
 - [`CHANGELOG.md`](./CHANGELOG.md)：版本历史
 
-## 适用问题
+## 使用
 
-增长、扩产、新市场、融资、第二曲线、新业务、数字化/AI投资、商业模式、并购、退出、创始人退出与传承、资本配置等企业价值问题。
+安装后直接问：
+
+```text
+用 jn-value-engine 回答：<你的企业决策问题>
+```
+
+例如：
+
+```text
+用 jn-value-engine 回答：
+新能源设备公司订单和客户都不错，但下游回款太慢，导致拖欠供应商500多万元、资金链断了。应该继续融资还是缩业务？
+```
 
 ## 方法边界
 
-本项目严格区分：
+本项目区分：
 
-- SOURCE-A：课程/著作明确内容
-- SOURCE-B：从课程案例归纳的稳定思考方式
-- ENGINE-C：为让 AI 稳定执行而加入的工程化规则
+- SOURCE-A：课程/著作明确内容；
+- SOURCE-B：从课程案例归纳的稳定思考方式；
+- ENGINE-C：为让 AI 稳定执行而加入的工程化规则。
 
-ENGINE-C 不应表述为贾宁老师本人提出或独创的方法。
+SOURCE-B / ENGINE-C 不应冒充任何教师、学校或机构的官方立场或独创理论。
