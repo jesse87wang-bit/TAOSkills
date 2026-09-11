@@ -1,4 +1,4 @@
-# jn-value-engine v3.4.0 安装与使用
+# jn-value-engine v3.5.0 安装与使用
 
 > 企业价值引擎
 
@@ -6,7 +6,7 @@
 
 **安装包中的 `SKILL.md` 是唯一执行真源。**
 
-不要把仓库里的历史协议文件与 v3.4.0 并列成多份最高优先级指令，否则容易重新引入我们刚刚解决的“版本冲突 / 输出漂移”。
+不要把仓库里的历史协议文件与 v3.5.0 并列成多份最高优先级指令，否则容易重新引入我们刚刚解决的“版本冲突 / 输出漂移”。
 
 推荐 clean bundle 结构：
 
@@ -25,13 +25,13 @@ OpenAI Skills 的标准形态是一个包含 `SKILL.md` 和支持资源的可复
 
 推荐方式：
 
-1. 下载 `jn-value-engine-v3.4.0.zip` clean bundle；
+1. 下载 `jn-value-engine-v3.5.0.zip` clean bundle；
 2. 在支持 Skills 安装的 ChatGPT 工作区中上传这个 zip；
 3. 审阅 Skill 内容；
 4. 选择 **Install**；
 5. 安装完成后，用下面的回归案例测试。
 
-不要把整个 `TAOSkills/jn-value-engine` 历史目录原样压成安装包，因为仓库里保留了旧版 DELIVERY-CONTRACT、renderer、router、schema、实验和 benchmark 文件用于版本追溯；v3.4.0 clean bundle 已主动排除这些可能冲突的旧执行协议。
+不要把整个 `TAOSkills/jn-value-engine` 历史目录原样压成安装包；v3.5.0 clean bundle 应只包含当前唯一执行真源和必要支持文件，避免旧执行协议造成冲突。
 
 ## 2. 在 Codex / 其他支持 Agent Skills 的环境中
 
