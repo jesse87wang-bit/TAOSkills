@@ -1,4 +1,4 @@
-# jn-value-engine v3.5.0 安装与使用
+# jn-value-engine v3.6.0 安装与使用
 
 > 企业价值引擎
 
@@ -6,7 +6,7 @@
 
 **安装包中的 `SKILL.md` 是唯一执行真源。**
 
-不要把仓库里的历史协议文件与 v3.5.0 并列成多份最高优先级指令，否则容易重新引入我们刚刚解决的“版本冲突 / 输出漂移”。
+不要把仓库里的历史协议文件与 v3.6.0 并列成多份最高优先级指令，否则容易重新引入我们刚刚解决的“版本冲突 / 输出漂移”。
 
 推荐 clean bundle 结构：
 
@@ -25,13 +25,13 @@ OpenAI Skills 的标准形态是一个包含 `SKILL.md` 和支持资源的可复
 
 推荐方式：
 
-1. 下载 `jn-value-engine-v3.5.0.zip` clean bundle；
+1. 下载 `jn-value-engine-v3.6.0.zip` clean bundle；
 2. 在支持 Skills 安装的 ChatGPT 工作区中上传这个 zip；
 3. 审阅 Skill 内容；
 4. 选择 **Install**；
 5. 安装完成后，用下面的回归案例测试。
 
-不要把整个 `TAOSkills/jn-value-engine` 历史目录原样压成安装包；v3.5.0 clean bundle 应只包含当前唯一执行真源和必要支持文件，避免旧执行协议造成冲突。
+不要把整个 `TAOSkills/jn-value-engine` 历史目录原样压成安装包；v3.6.0 clean bundle 应只包含当前唯一执行真源和必要支持文件，避免旧执行协议造成冲突。
 
 ## 2. 在 Codex / 其他支持 Agent Skills 的环境中
 
@@ -79,6 +79,7 @@ TRIGGERED
 7. 直到第 09 最后一个字符输出完成前，不得调用图片生成；
 8. TEXT VALIDATION 通过后，才生成一张单独的 TF 企业价值路线图；
 9. 图片不得改变文字阶段结论，也不得新增未经验证的数据。
+10. 图片顶部与 Footer 的视觉品牌只使用 `TF`、`TF 企业价值引擎`，不得出现 `JN`；右侧 Skill 署名必须保留 `jn-value-engine`，不得改为 `tf-value-engine`。
 
 只要发生以下任一情况，都判安装/执行失败：
 
