@@ -1,5 +1,11 @@
 # Changelog
 
+## v3.6.0
+
+- 强化用户可见输出纯净锁，明确禁止展示“我会严格按协议执行”等调用说明、执行计划和工具进度。
+- 路线图视觉品牌由 `JN` 切换为 `TF`，图片顶部与 Footer 左侧统一为 `TF 企业价值引擎`；Skill 名称及 Footer 右侧署名继续保留 `jn-value-engine`。
+- 增加图片品牌目视复核：视觉品牌发现 `JN`，或 Skill 署名不是 `jn-value-engine`，即判定图片无效并重新生成。
+
 ## v3.3
 
 - 不改变 v3.1 的 Decision Engine，不改变 v3.2 的 Interaction Router，新增专业边界路由。
