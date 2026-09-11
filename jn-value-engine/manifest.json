@@ -1,6 +1,6 @@
 {
   "name": "jn-value-engine",
-  "version": "3.5.0",
+  "version": "3.6.0",
   "entrypoint": "SKILL.md",
   "execution": {
     "mode": "state_machine",
@@ -16,7 +16,7 @@
     "COMPLETE"
   ],
   "hard_gate": "No image generation before TEXT_VALIDATED and MODULE_09_FINISHED; no user-visible process commentary before, between, or after deliverables",
-  "visible_output": "FORMAL_TEXT_THEN_JN_ROADMAP_ONLY",
-  "image_template": "JN_WHITE_CONSULTING_REPORT",
+  "visible_output": "FORMAL_TEXT_THEN_TF_ROADMAP_ONLY",
+  "image_template": "TF_WHITE_CONSULTING_REPORT",
   "validator": "tests/validate_output.py"
 }
