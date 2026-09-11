@@ -1,6 +1,6 @@
 {
   "name": "jn-value-engine",
-  "version": "3.6.1",
+  "version": "3.8.0",
   "entrypoint": "SKILL.md",
   "execution": {
     "mode": "state_machine",
@@ -9,14 +9,16 @@
   "states": [
     "TRIGGERED",
     "ANALYZED",
-    "TEXT_RENDERED",
+    "TEXT_COMPOSED",
     "TEXT_VALIDATED",
     "IMAGE_ALLOWED",
-    "IMAGE_RENDERED",
+    "IMAGE_RENDERED_HIDDEN",
+    "IMAGE_VALIDATED",
+    "FINAL_RENDERED",
     "COMPLETE"
   ],
-  "hard_gate": "No user-visible process commentary before the formal title; no image generation before TEXT_VALIDATED and MODULE_09_FINISHED; immediately generate the TF roadmap after module 09 with no pause, confirmation, transition, or delayed turn",
-  "visible_output": "FORMAL_TEXT_THEN_TF_ROADMAP_ONLY",
+  "hard_gate": "Compose and validate the complete 01–09 analysis internally; generate and validate the roadmap without exposing it early; then render one non-empty final assistant response whose ordinary Markdown body permanently shows FORMAL_TEXT_THEN_INLINE_TF_ROADMAP. Never place formal text in analysis/commentary/thinking, never end with an empty final, and never expose the image before the text.",
+  "visible_output": "ONE_FINAL_RESPONSE_WITH_PERSISTENT_FORMAL_TEXT_THEN_INLINE_TF_ROADMAP",
   "image_template": "TF_WHITE_CONSULTING_REPORT",
   "validator": "tests/validate_output.py"
 }
