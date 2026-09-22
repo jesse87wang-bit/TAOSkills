@@ -1,6 +1,6 @@
 {
   "name": "jn-value-engine",
-  "version": "3.8.0",
+  "version": "3.9.0",
   "entrypoint": "SKILL.md",
   "execution": {
     "mode": "state_machine",
@@ -17,8 +17,10 @@
     "FINAL_RENDERED",
     "COMPLETE"
   ],
-  "hard_gate": "Compose and validate the complete 01–09 analysis internally; generate and validate the roadmap without exposing it early; then render one non-empty final assistant response whose ordinary Markdown body permanently shows FORMAL_TEXT_THEN_INLINE_TF_ROADMAP. Never place formal text in analysis/commentary/thinking, never end with an empty final, and never expose the image before the text.",
+  "hard_gate": "Compose and validate the complete 01–09 analysis internally; read assets/tf-roadmap-master.jpeg and preserve its fixed visual geometry; generate and validate the roadmap without exposing it early; then render one non-empty final assistant response whose ordinary Markdown body permanently shows FORMAL_TEXT_THEN_INLINE_TF_ROADMAP. Never place formal text in analysis/commentary/thinking, never end with an empty final, never expose the image before the text, and never substitute a free-form consulting layout for the master.",
   "visible_output": "ONE_FINAL_RESPONSE_WITH_PERSISTENT_FORMAL_TEXT_THEN_INLINE_TF_ROADMAP",
-  "image_template": "TF_WHITE_CONSULTING_REPORT",
+  "image_template": "TF_FIXED_MASTER_NEW_ENERGY_CASHFLOW_REPAIR",
+  "image_reference_asset": "assets/tf-roadmap-master.jpeg",
+  "image_layout_lock": "HERO_01_02030405_06ABC_07ARROWS_WITH_STAGE_DETAILS_08METRICS_09FOUR_GATES_10NEXT_STEPS_FOOTER",
   "validator": "tests/validate_output.py"
 }

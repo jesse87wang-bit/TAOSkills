@@ -1,14 +1,14 @@
 # jn-value-engine
 
-> **企业价值引擎** · v3.6.1
+> **企业价值引擎** · v3.9.0
 
 `jn-value-engine` 是一个面向企业经营、资本配置与价值创造问题的 AI Skill，用于增长、扩产、新市场、融资、第二曲线、新业务、数字化/AI 投资、商业模式、并购、退出与重大资本配置。
 
 ## 当前版本的核心变化
 
-v3.6.1 强化“用户可见输出纯净锁”：用户只看到正式01–09文字分析，随后直接看到 TF 企业价值路线图；不再看到 Skill 调用、读取、执行计划、校验、解锁、生成进度或完成复述。路线图视觉品牌统一为 TF，Skill 名称和图片署名继续保留 `jn-value-engine`。
+v3.9.0 在“用户可见输出纯净锁”基础上新增 **TF 母版像素级结构锁**。路线图必须读取并对照 `assets/tf-roadmap-master.jpeg`；只能替换案例内容与行业 Hero，不得自由重排模块、改变信息密度或改用通用咨询模板。路线图视觉品牌统一为 TF，Skill 名称和图片署名继续保留 `jn-value-engine`。
 
-`TRIGGERED → ANALYZED → TEXT_RENDERED → TEXT_VALIDATED → IMAGE_ALLOWED → IMAGE_RENDERED → COMPLETE`
+`TRIGGERED → ANALYZED → TEXT_COMPOSED → TEXT_VALIDATED → IMAGE_ALLOWED → IMAGE_RENDERED_HIDDEN → IMAGE_VALIDATED → FINAL_RENDERED → COMPLETE`
 
 最重要的硬门禁：**01–09 完整文字没有真正输出并通过 TEXT VALIDATION 前，禁止进入图片阶段；正式文字和路线图之外，不主动输出任何过程信息。**
 
@@ -16,7 +16,7 @@ v3.6.1 强化“用户可见输出纯净锁”：用户只看到正式01–09文
 
 `SKILL.md` 是当前版本唯一执行真源。
 
-仓库中历史版本遗留的文件可以用于研究与追溯，但不得覆盖 v3.6.1 的 `SKILL.md`。
+仓库中历史版本遗留的文件可以用于研究与追溯，但不得覆盖 v3.9.0 的 `SKILL.md`。
 
 ## 标准交付
 
@@ -33,7 +33,7 @@ v3.6.1 强化“用户可见输出纯净锁”：用户只看到正式01–09文
 3. 校验通过后才解锁图片；
 4. 紧接着生成并显示同源 TF 企业价值路线图；图片后立即结束，不加尾声。
 
-路线图固定采用“纺织企业智能化改造”白底高密度咨询报告母版：深蓝行业 Hero + 白底卡片区 + 金色编号，包含决策结论、现状、真正问题、关键矛盾、潜在机会、A/B/C、阶段路线、关键指标、4个决策闸门、未来1–2周行动和 TF Footer。
+路线图唯一固定母版为 `assets/tf-roadmap-master.jpeg`（“新能源设备公司资金链修复”版）：深蓝行业 Hero、全宽01结论、同排02–05四卡、06 A/B/C、07连续箭头及逐阶段“目标/动作/进入条件”、08指标图标块、09四个决策闸门、10未来1–2周行动和 TF Footer。文字描述不得覆盖母版几何。
 
 固定九模块：
 
@@ -49,9 +49,10 @@ v3.6.1 强化“用户可见输出纯净锁”：用户只看到正式01–09文
 
 ## 可验证性
 
-v3.6.1 附带：
+v3.9.0 附带：
 
 - `manifest.json`：状态机与 Fail Closed 定义；
+- `assets/tf-roadmap-master.jpeg`：每次图片生成前必须读取的唯一视觉母版；
 - `tests/validate_output.py`：静态验证九模块、顺序、A/B/C、4 Gate、下一步和反证条件；
 - `tests/ACCEPTANCE.md`：验收与回归测试。
 
@@ -59,7 +60,7 @@ v3.6.1 附带：
 
 ## 安装
 
-ChatGPT 官方 Skills 支持以 `SKILL.md` + 支持资源构成可复用工作流。推荐直接安装 **v3.6.1 clean bundle**；详细说明见 [`INSTALL.md`](./INSTALL.md)。
+ChatGPT 官方 Skills 支持以 `SKILL.md` + 支持资源构成可复用工作流。推荐直接安装 **v3.9.0 clean bundle**；详细说明见 [`INSTALL.md`](./INSTALL.md)。
 
 ## 方法边界
 

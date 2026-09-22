@@ -1,4 +1,4 @@
-# jn-value-engine v3.6.1 安装与使用
+# jn-value-engine v3.9.0 安装与使用
 
 > 企业价值引擎
 
@@ -6,7 +6,7 @@
 
 **安装包中的 `SKILL.md` 是唯一执行真源。**
 
-不要把仓库里的历史协议文件与 v3.6.1 并列成多份最高优先级指令，否则容易重新引入版本冲突或输出漂移。
+不要把仓库里的历史协议文件与 v3.9.0 并列成多份最高优先级指令，否则容易重新引入版本冲突或输出漂移。
 
 推荐 clean bundle 结构：
 
@@ -14,6 +14,8 @@
 jn-value-engine/
 ├── SKILL.md
 ├── manifest.json
+├── assets/
+│   └── tf-roadmap-master.jpeg
 └── tests/
     ├── ACCEPTANCE.md
     └── validate_output.py
@@ -25,13 +27,13 @@ OpenAI Skills 的标准形态是一个包含 `SKILL.md` 和支持资源的可复
 
 推荐方式：
 
-1. 下载 `jn-value-engine-v3.6.1.zip` clean bundle；
+1. 下载 `jn-value-engine-v3.9.0.zip` clean bundle；
 2. 在支持 Skills 安装的 ChatGPT 工作区中上传这个 zip；
 3. 审阅 Skill 内容；
 4. 选择 **Install**；
 5. 安装完成后，用下面的回归案例测试。
 
-不要把整个 `TAOSkills/jn-value-engine` 历史目录原样压成安装包；v3.6.1 clean bundle 应只包含当前唯一执行真源和必要支持文件，避免旧执行协议造成冲突。
+不要把整个 `TAOSkills/jn-value-engine` 历史目录原样压成安装包；v3.9.0 clean bundle 应只包含当前唯一执行真源和必要支持文件，避免旧执行协议造成冲突。
 
 ## 2. 在 Codex / 其他支持 Agent Skills 的环境中
 
@@ -61,10 +63,12 @@ jn-value-engine/SKILL.md = Single Source of Truth
 ```text
 TRIGGERED
 → ANALYZED
-→ TEXT_RENDERED
+→ TEXT_COMPOSED
 → TEXT_VALIDATED
 → IMAGE_ALLOWED
-→ IMAGE_RENDERED
+→ IMAGE_RENDERED_HIDDEN
+→ IMAGE_VALIDATED
+→ FINAL_RENDERED
 → COMPLETE
 ```
 
@@ -80,6 +84,8 @@ TRIGGERED
 8. TEXT VALIDATION 通过后，才生成一张单独的 TF 企业价值路线图；
 9. 图片不得改变文字阶段结论，也不得新增未经验证的数据。
 10. 图片顶部与 Footer 的视觉品牌只使用 `TF`、`TF 企业价值引擎`，不得出现 `JN`；右侧 Skill 署名必须保留 `jn-value-engine`，不得改为 `tf-value-engine`。
+11. 图片生成前必须读取 `assets/tf-roadmap-master.jpeg`；最终布局必须保持 Hero→01→02–05→06→07→08→09→10→Footer 的固定顺序。
+12. 07 路线图必须同时包含连续阶段箭头，以及每阶段独立的 `目标/动作/进入条件`；不能用一个共同条件代替。
 
 只要发生以下任一情况，都判安装/执行失败：
 
@@ -92,6 +98,8 @@ TRIGGERED
 - 09 没有反证条件；
 - 图片代替九段文字；
 - 图片阶段偷偷加入新的数字或改变结论。
+- 未读取母版、自由重排模块、图标与信息密度明显偏离母版；
+- 07 缺逐阶段“目标/动作/进入条件”。
 
 ## 4. 本地验证器
 
