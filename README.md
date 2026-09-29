@@ -26,3 +26,19 @@ https://github.com/jesse87wang-bit/TAOSkills/tree/main/jn-value-engine
 
 请完整加载整个 jn-value-engine 目录，不要只复制 SKILL.md 的部分内容。安装后用“用 jn-value-engine 回答：……”调用。
 ```
+
+### tao-spatial-video
+
+**空间感口播包装**。把真人口播原片 + 口播稿做成「真实背景里玻璃卡从人物身后浮出」的科技感成片，输出 4K 60 帧，和原片同规格。
+
+- 安装：[`tao-spatial-video/INSTALL.md`](tao-spatial-video/INSTALL.md)
+- Skill：[`tao-spatial-video/SKILL.md`](tao-spatial-video/SKILL.md)
+- 说明：[`tao-spatial-video/README.md`](tao-spatial-video/README.md)
+- Changelog：[`tao-spatial-video/CHANGELOG.md`](tao-spatial-video/CHANGELOG.md)
+
+```text
+请从 GitHub 安装并启用 tao-spatial-video：
+https://github.com/jesse87wang-bit/TAOSkills/tree/main/tao-spatial-video
+
+请完整加载整个目录（包括 toolkit/）。安装后用「用 tao-spatial-video 把这条口播做成片」调用。
+```
