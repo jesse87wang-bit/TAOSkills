@@ -1,0 +1,17 @@
+{
+  "name": "tao-spatial-video",
+  "version": "1.0.0",
+  "entrypoint": "SKILL.md",
+  "toolkit": "toolkit/",
+  "output": {
+    "resolution": "2160x3840",
+    "fps": 60,
+    "codec": "h264-high",
+    "color": "bt709"
+  },
+  "requires": {
+    "device": ["ffmpeg (zscale)", "python3", "numpy", "opencv", "onnxruntime", "sherpa-onnx"],
+    "cloud": ["python3", "playwright", "chromium", "Noto Sans CJK"],
+    "user_assets": ["toolkit/sfx/*.wav"]
+  }
+}
