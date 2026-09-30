@@ -30,6 +30,7 @@ https://github.com/jesse87wang-bit/TAOSkills/tree/main/jn-value-engine
 ### tao-spatial-video
 
 **空间感口播包装**。把真人口播原片 + 口播稿做成「真实背景里玻璃卡从人物身后浮出」的科技感成片，输出 4K 60 帧，和原片同规格。
+v1.1 起 Agent 只写一份分镜表，样式、动画、音效、字体、模型全部固定并带回归测试，换 Agent 出片一致。
 
 - 安装：[`tao-spatial-video/INSTALL.md`](tao-spatial-video/INSTALL.md)
 - Skill：[`tao-spatial-video/SKILL.md`](tao-spatial-video/SKILL.md)
@@ -40,5 +41,6 @@ https://github.com/jesse87wang-bit/TAOSkills/tree/main/jn-value-engine
 请从 GitHub 安装并启用 tao-spatial-video：
 https://github.com/jesse87wang-bit/TAOSkills/tree/main/tao-spatial-video
 
-请完整加载整个目录（包括 toolkit/）。安装后用「用 tao-spatial-video 把这条口播做成片」调用。
+请完整加载整个目录（包括 toolkit/），在 toolkit/ 里运行 setup、doctor、selftest --pixels（见 INSTALL.md）。
+安装后用「用 tao-spatial-video 把这条口播做成片」调用。
 ```

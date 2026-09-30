@@ -1,6 +1,8 @@
-# tao-spatial-video 合成器（在用户电脑的 Linux 环境里跑）
+# tao-spatial-video 合成器（渲染核心）
 # 原片像素不动，只改玻璃卡/文字所在区域；人物用 RVM 抠像，卡片放在人物身后时会被人挡住。
 # 坐标约定：时间轴里的 x/y 用 1080×1920 布局坐标，渲染时 ×K(=2) 到 4K；素材 PNG 是 3 倍 css 像素。
+# ⚠ 这个文件的算法与第一条成片逐行一致（make_video.py selftest 会核对源码指纹），改一个数字成片就会变。
+#   路径由 configure() 设置，不要在这里写死。
 import cv2, numpy as np, math, sys, os, json, subprocess, time
 cv2.setNumThreads(2)
 W, H, FPS = 2160, 3840, 60
@@ -9,8 +11,16 @@ SPR = 3.0          # 素材像素 / css 像素
 BASE = os.path.dirname(os.path.abspath(__file__))
 SP = os.environ.get('SV_SPRITES', BASE+'/sp3/')
 SUBDIR = os.environ.get('SV_SUBS', BASE+'/sub4k/')
-MOV = os.environ.get('SV_MOV', '')          # 由 render_chunk.py 设置
-SRC_HDR = os.environ.get('SV_HDR', '1') == '1'   # iPhone HLG/杜比视界 → 1；普通 SDR 素材 → 0
+MOV = os.environ.get('SV_MOV', '')
+SRC_HDR = os.environ.get('SV_HDR', '1') == '1'   # iPhone HLG/杜比视界 → True；普通 SDR 素材 → False
+RVM = os.environ.get('SV_RVM', os.path.expanduser('~/work/sv/rvm.onnx'))
+def configure(sprites=None, subs=None, mov=None, hdr=None, rvm=None):
+    global SP, SUBDIR, MOV, SRC_HDR, RVM
+    if sprites: SP = os.path.join(sprites, '')
+    if subs: SUBDIR = os.path.join(subs, '')
+    if mov: MOV = mov
+    if hdr is not None: SRC_HDR = bool(hdr)
+    if rvm: RVM = rvm
 SDR_VF = "scale=2160:3840:flags=lanczos,format=bgr24,fps=60"
 TONEMAP = ("zscale=tin=arib-std-b67:min=bt2020nc:pin=bt2020:rin=tv:t=linear:npl=100,format=gbrpf32le,"
            "zscale=p=bt709,tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=bgr24,fps=60")
@@ -93,7 +103,7 @@ class Matte:
     def __init__(self):
         import onnxruntime as ort
         so = ort.SessionOptions(); so.intra_op_num_threads = 3
-        self.s = ort.InferenceSession(os.environ.get('SV_RVM', os.path.expanduser('~/work/sv/rvm.onnx')), so, providers=['CPUExecutionProvider'])
+        self.s = ort.InferenceSession(RVM, so, providers=['CPUExecutionProvider'])
         self.rec = [np.zeros([1,1,1,1], np.float32)]*4; self.dr = np.array([0.25], np.float32)
     def __call__(self, f4k):
         sm = cv2.resize(f4k, (1080, 1920), interpolation=cv2.INTER_AREA)

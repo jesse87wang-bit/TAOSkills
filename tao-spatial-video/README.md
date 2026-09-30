@@ -1,6 +1,6 @@
 # tao-spatial-video
 
-> **空间感口播包装** · v1.0.0
+> **空间感口播包装** · v1.1.0
 
 把一条真人口播原片（iPhone 竖拍 4K HDR）和口播稿，做成像 AI 产品发布会一样的科技感成片：
 
@@ -19,32 +19,45 @@
 口播稿：（贴上来）
 ```
 
-Agent 会依次完成：听写对齐字幕 → 按口播结构设计每一章的玻璃卡和卡点 → 渲染素材 → 4K 静帧自检 → 在你电脑上分段渲染 4K60 → 混音 → 核对规格后交付。2 分钟左右的片子约 1 小时（渲染约 40 分钟）。
+Agent 会：听写对齐字幕 → 按口播结构写一份**分镜表** → 渲染玻璃卡素材并自动校验 → 4K 静帧自检 → 分段渲染 4K60 → 混音 → 核对规格后交付。2 分钟左右的片子约 1 小时（渲染约 40 分钟）。
+
+## 换 Agent 也一样（v1.1）
+
+v1.1 把「做法」固定成了工具包：Agent 只写分镜表 `storyboard.json`（哪句话出什么卡、放左边还是右边），
+玻璃卡样式、坐标动画、音效规则、字体、模型、渲染参数全部由 `toolkit/make_video.py` 按固定规则生成，并按 sha256 锁定版本。
+Claude、Codex、WorkBuddy 等任何能跑 Python 的 Agent 装上后，同一份分镜表出来的是同一条片子。
+
+自带回归测试：`python3 toolkit/make_video.py selftest --pixels`，拿第一条成片《WorkBuddy 还是豆包工作》逐项、逐像素比对。
+v1.1 发布时的结果：时间轴 58 个元素 / 82 个音效逐项一致，56 张素材 + 69 张字幕逐像素一致，在原机器上重渲的分段和原成片 **md5 完全相同**。
 
 ## 运行要求
 
-- Agent 能访问你电脑上的文件夹（Claude 桌面应用链接电脑），原片不上传云端
-- 云端环境有 Chromium / Playwright（渲染玻璃卡素材）
-- 音效需自备：见 [`toolkit/sfx/README.md`](toolkit/sfx/README.md)
+- Python 3.10+、ffmpeg（带 zscale）、Playwright + Chromium；依赖版本见 `toolkit/requirements.txt`（也可用 `toolkit/Dockerfile`）
+- 字体和模型首次运行自动下载并校验
+- 音效需自备（剪映授权）：见 [`toolkit/sfx/README.md`](toolkit/sfx/README.md)
+- 原片可以不离开你的电脑：素材可以在另一台机器做，渲染在原片所在的机器上跑（见 `toolkit/README.md`）
 
 ## 目录
 
 ```text
 tao-spatial-video/
-├── SKILL.md            执行真源
+├── SKILL.md                 Agent 执行流程（真源）
 ├── manifest.json
 ├── INSTALL.md
 ├── CHANGELOG.md
 └── toolkit/
-    ├── device/         在电脑上跑：识别、对齐、HDR 色调映射、RVM 抠像、3D 玻璃卡合成、分段渲染、混音
-    ├── container/      在云端跑：玻璃卡组件库、4K 字幕、静帧预览
-    ├── templates/      完整示例：一条 2 分钟成片的时间轴和素材定义
-    ├── sfx/            音效（不随仓库分发）
-    └── fonts/          Poppins（首次运行自动下载）
+    ├── make_video.py        命令行：probe / asr / align / validate / sprites / subs / preview / render / mix / assemble / verify / selftest
+    ├── STORYBOARD.md        分镜表格式
+    ├── README.md            环境、分机器、一致性说明
+    ├── sv/                  组件库、分镜表翻译、校验、合成器、混音…
+    ├── golden/workbuddy/    第一条成片的完整分镜表 + 回归基准
+    ├── requirements.txt · assets.json · Dockerfile
+    ├── sfx/                 音效（不随仓库分发）
+    └── fonts/               字体（自动下载）
 ```
 
 ## 第三方组件
 
-- 人物抠像：[Robust Video Matting](https://github.com/PeterL1n/RobustVideoMatting)（运行时下载模型）
+- 人物抠像：[Robust Video Matting](https://github.com/PeterL1n/RobustVideoMatting)（GPL-3.0，运行时下载模型）
 - 语音识别：[sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) + SenseVoice（运行时下载模型）
-- 字体：Poppins（SIL OFL）、Noto Sans CJK（系统自带）
+- 字体：Poppins、Noto Sans CJK SC 2.004（SIL OFL，运行时下载）

@@ -1,3 +1,8 @@
 toolkit/sfx/*.wav
 toolkit/fonts/*.ttf
+toolkit/fonts/*.otf
+toolkit/fonts/.fontconfig/
+toolkit/golden/*/build/
+build/
 __pycache__/
+*.part

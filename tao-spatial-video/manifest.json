@@ -1,8 +1,10 @@
 {
   "name": "tao-spatial-video",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "entrypoint": "SKILL.md",
   "toolkit": "toolkit/",
+  "cli": "toolkit/make_video.py",
+  "storyboard_schema": "tao-spatial-video/storyboard@1.1",
   "output": {
     "resolution": "2160x3840",
     "fps": 60,
@@ -10,8 +12,12 @@
     "color": "bt709"
   },
   "requires": {
-    "device": ["ffmpeg (zscale)", "python3", "numpy", "opencv", "onnxruntime", "sherpa-onnx"],
-    "cloud": ["python3", "playwright", "chromium", "Noto Sans CJK"],
+    "python": ">=3.10",
+    "binaries": ["ffmpeg (with zscale)"],
+    "python_packages": "toolkit/requirements.txt",
+    "downloads": "toolkit/assets.json (fonts, models; sha256-pinned)",
     "user_assets": ["toolkit/sfx/*.wav"]
-  }
+  },
+  "selftest": "python3 toolkit/make_video.py selftest --pixels",
+  "golden": "toolkit/golden/workbuddy/"
 }

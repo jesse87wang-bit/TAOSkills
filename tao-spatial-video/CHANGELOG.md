@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.1.0 · 2026-09-29
+
+让不同 Agent（Claude / Codex / WorkBuddy …）装上后出片一致。
+
+- **分镜表**：新增 `storyboard.json` 格式。Agent 只写内容、时间点（秒或口播关键词）和位置预设（L/R/F/TOP），坐标、动画、音效由固定规则翻译；不再手写时间轴代码
+- **一条命令行** `make_video.py`：probe / asr / align / validate / sprites / subs / plan / grab / preview / render / mix / assemble / verify / all / selftest / doctor / setup
+- **校验**：红线词（评论区、私信、扣 xx、老板/高管/管理者）、同侧卡片重叠、章节标重叠、版式禁区、时间合法性、素材文字溢出（渲染后自动检测）
+- **锁版本**：字体（Poppins、Noto Sans CJK SC 2.004）、抠像和识别模型、音效都按 sha256 校验；素材渲染用私有 fontconfig，不受本机字体影响；`requirements.txt` 固定依赖版本；新增参考 `Dockerfile`（未实际构建验证）
+- **回归测试**：`golden/workbuddy/` 收录第一条成片的完整分镜表和基准（时间轴、素材/字幕逐像素哈希、合成器源码指纹）。发布前结果：时间轴逐项一致；56 张素材、69 张字幕逐像素一致；在原机器上重渲第 420–870、3990–4410、7050–7268 帧，输出和原成片分段 md5 相同；混音 md5 相同
+- 合成器渲染核心与 v1.0 相同（只把路径改成可配置），v1.0 做出来的片子用 v1.1 可逐帧复现
+- 字幕末句自动延到片尾；组件库改为 24 种固定组件，去掉引导评论的 CTA 组件
+
 ## v1.0.0 · 2026-09-29
 
 首个版本，来自第一条成片《WorkBuddy 还是豆包工作？》的完整制作流程。

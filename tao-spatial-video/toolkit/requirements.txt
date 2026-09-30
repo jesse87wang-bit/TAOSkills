@@ -1,0 +1,12 @@
+# tao-spatial-video 固定版本（make_video.py doctor 会逐个核对）
+# 基准环境：
+#   素材/字幕：Ubuntu 24.04 x86_64 · Playwright 1.56.0（Chromium 141.0.7390.37）· Pillow 12.2.0
+#   成片渲染：Ubuntu 22.04 aarch64 · ffmpeg 4.4.2（带 zscale）· 下面的 numpy/opencv/onnxruntime
+# 版本不同也能出片、效果一致，但可能有肉眼看不出的像素级差异；要逐像素一致就用同样的版本。
+numpy==2.2.6
+opencv-python-headless==5.0.0.93
+onnxruntime==1.23.2
+sherpa-onnx==1.13.8
+soundfile==0.14.0
+pillow==12.2.0
+playwright==1.56.0
