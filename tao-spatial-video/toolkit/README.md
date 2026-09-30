@@ -1,4 +1,4 @@
-# tao-spatial-video 工具包 v1.1
+# tao-spatial-video 工具包 v1.2
 
 一条命令行 `make_video.py`，从一份分镜表出发，把真人口播原片做成「真实背景里玻璃卡从人物身后浮出」的 4K60 成片。
 分镜表怎么写见 [`STORYBOARD.md`](STORYBOARD.md)。
@@ -90,6 +90,11 @@ docker run --rm -v "$PWD":/work -w /work tao-spatial-video all storyboard.json
 ```
 镜像基于 `mcr.microsoft.com/playwright/python:v1.56.0-noble`，构建时会下载字体模型并跑 `selftest --pixels`。
 说明：维护者的构建环境访问不了容器镜像仓库，这个 Dockerfile **还没有实际构建验证过**；镜像里的 ffmpeg 是 Ubuntu 24.04 的 6.1，和基准渲染机的 4.4.2 不同，出片效果一致，但不保证与基准逐像素一致。
+
+## 平台安全区（v1.2）
+
+视频号等平台在长屏手机上会把 9:16 视频铺满播放区，左右各裁掉 5%–9%。v1.2 默认 `safe_x = 90`：侧边玻璃卡、胸前大字、字幕全部自动收进安全区（空间不够时卡片宁可缩小也不让字被头挡住，字幕太长先缩字号、再不行报错要求拆行）。
+第一条成片的 golden 分镜表写了 `safe_x: 0`，只为逐帧复现旧片；新片子不要写。安全区参数为 0 时合成器和 v1.1 逐位相同（原机器重渲分段 md5 不变）。
 
 ## 渲染参数（已和用户确认，不要改）
 

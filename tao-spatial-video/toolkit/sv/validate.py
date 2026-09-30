@@ -48,6 +48,13 @@ def check(path, sprite_dir=None):
         if k not in pal or len(pal[k]) != 3:
             E.append(f'palette.{k} 需要 3 个颜色')
     total = SB.total_sec(sb) if not any('n_src' in e for e in E) else 1e9
+    # 平台安全区：视频号等在长屏手机上左右各裁 5%–9%。safe_x<60 只允许用于逐帧复现第一条成片（它当年没留安全区）
+    sx = SB.safe_x(sb)
+    is_golden = sb.get('title') == 'WorkBuddy 还是豆包工作' and src.get('n_src') == 7177
+    if sx < 60 and not is_golden:
+        E.append(f'safe_x={sx:g} 太小：发布到视频号/抖音会被裁掉两侧、玻璃框出画。删掉这个字段（默认 {SB.DEFAULT_SAFE_X}）或设为 60–110')
+    elif sx > 140:
+        W.append(f'safe_x={sx:g} 很大，卡片会被压得很小')
 
     # 字幕
     lp = SB.lines_path(sb); lines = []

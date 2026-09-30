@@ -169,8 +169,9 @@ def cmd_subs(a):
     from sv import subs
     sb = SB.read(a.storyboard); p = P(sb)
     lines = json.load(open(SB.lines_path(sb), encoding='utf-8'))
-    s, too_long = subs.make(lines, p['subs'], SB.total_sec(sb))
-    for t in too_long: print('⚠ 字幕太宽，拆成两行：', t)
+    s, too_long = subs.make(lines, p['subs'], SB.total_sec(sb), SB.safe_x(sb))
+    for t in too_long: print('✗ 字幕太长、缩到最小字号也超出安全区，请在 lines.txt 里拆成两行：', t)
+    if too_long: sys.exit(1)
     print(f'✓ {len(s)} 行字幕 → {p["subs"]}')
 
 def cmd_plan(a):
@@ -188,7 +189,8 @@ def cmd_plan(a):
 def cmd_preview(a):
     from sv import preview, comp4k, assets
     sb = SB.read(a.storyboard); p = P(sb); plan = load_plan(sb)
-    comp4k.configure(sprites=p['sprites'], subs=p['subs'], mov=plan['meta']['mov'], hdr=plan['meta']['hdr'], rvm=assets.rvm_path())
+    comp4k.configure(sprites=p['sprites'], subs=p['subs'], mov=plan['meta']['mov'], hdr=plan['meta']['hdr'], rvm=assets.rvm_path(),
+                     safe_x=plan['meta']['safe_x'])
     stills = []
     os.makedirs(os.path.join(p['build'], 'stills'), exist_ok=True)
     for arg in a.at:
@@ -237,7 +239,7 @@ def render_one(sb, i0, i1):
     if not os.path.exists(os.path.join(p['subs'], 'subs.json')): die('没有字幕贴图：先跑 subs')
     m = plan['meta']
     if not os.path.exists(m['mov']): die(f'找不到原片 {m["mov"]}')
-    comp4k.configure(sprites=p['sprites'], subs=p['subs'], mov=m['mov'], hdr=m['hdr'], rvm=assets.rvm_path())
+    comp4k.configure(sprites=p['sprites'], subs=p['subs'], mov=m['mov'], hdr=m['hdr'], rvm=assets.rvm_path(), safe_x=m['safe_x'])
     os.makedirs(p['chunks'], exist_ok=True); out = chunk_file(sb, i0); t0 = time.time()
     comp4k.render_chunk(plan, out, 0.0, i0, i1, n_src=m['n_src'])
     n = count_frames(out)

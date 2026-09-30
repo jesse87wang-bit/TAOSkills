@@ -14,7 +14,7 @@
   "fast_blur": "0ac5ac87b8d0e8e3a50484426b791f766befc50494c71c6e224ea7c75bef32f6",
   "state": "6b62c8d7183ba2a09a3deb6281ec6443163a18b1adc91e56aff19f3e8578a316",
   "update_head": "bd369e303cc560fe2ecc6df93938ee0767628dd1583f112c392df796f1c1423a",
-  "adjust_side": "85792065415a9c3d81b0e2f6982444c6313103a1118347e884c68e672b17a220",
+  "adjust_side": "607681dbb64421ff5c5c30fcd69f2f22bbc5912cbc452dac1efd52d8edacc694",
   "alpha_region": "e5b57e50f8805853362ef783575fe535d85682c3e28d756b97216848de59b8e1",
   "draw": "aa067cc5374b9df225b42d2b46c77e406ca5bfb2ebd294ec98262e2122b49f67",
   "over_png": "6a3aa42697f02f5b43cc35b87a77104db890c38743823597a16c59c3b2da9cf6",
@@ -714,5 +714,6 @@
    118.12,
    121.2
   ]
- ]
+ ],
+ "_compositor_note": "v1.2 起 adjust_side 支持平台安全区；safe_x=0 时与 v1.0/v1.1 逐位相同（随机 20 万组参数比对 + 原机器重渲分段 md5 相同）"
 }

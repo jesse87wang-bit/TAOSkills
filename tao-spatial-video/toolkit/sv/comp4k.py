@@ -14,13 +14,19 @@ SUBDIR = os.environ.get('SV_SUBS', BASE+'/sub4k/')
 MOV = os.environ.get('SV_MOV', '')
 SRC_HDR = os.environ.get('SV_HDR', '1') == '1'   # iPhone HLG/杜比视界 → True；普通 SDR 素材 → False
 RVM = os.environ.get('SV_RVM', os.path.expanduser('~/work/sv/rvm.onnx'))
-def configure(sprites=None, subs=None, mov=None, hdr=None, rvm=None):
-    global SP, SUBDIR, MOV, SRC_HDR, RVM
+# 平台安全区（1080 布局坐标，每侧留白）：视频号等平台在长屏手机上会裁掉左右各 5%–9%。
+#   SAFE_X=0, BLEED=25, S_FLOOR=0.62 是 v1.0/v1.1 的旧行为（卡片可贴边、略出画），只用于复现旧片。
+SAFE_X, BLEED, S_FLOOR = 0.0, 25, 0.62
+def configure(sprites=None, subs=None, mov=None, hdr=None, rvm=None, safe_x=None):
+    global SP, SUBDIR, MOV, SRC_HDR, RVM, SAFE_X, BLEED, S_FLOOR
     if sprites: SP = os.path.join(sprites, '')
     if subs: SUBDIR = os.path.join(subs, '')
     if mov: MOV = mov
     if hdr is not None: SRC_HDR = bool(hdr)
     if rvm: RVM = rvm
+    if safe_x is not None:
+        if safe_x > 0: SAFE_X, BLEED, S_FLOOR = float(safe_x), 0, 0.5    # 玻璃框完整留在安全区内；空间不够时宁可缩小也不让字被头挡住
+        else: SAFE_X, BLEED, S_FLOOR = 0.0, 25, 0.62
 SDR_VF = "scale=2160:3840:flags=lanczos,format=bgr24,fps=60"
 TONEMAP = ("zscale=tin=arib-std-b67:min=bt2020nc:pin=bt2020:rin=tv:t=linear:npl=100,format=gbrpf32le,"
            "zscale=p=bt709,tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=bgr24,fps=60")
@@ -125,18 +131,18 @@ def adjust_side(e, st):
     s = st['s']
     if e['x'] > 540:
         r = HEAD['r']
-        smax = (1070-r)/max(1.0, wc-45)
-        if s > smax: s = max(min(s, 0.62), smax)
+        smax = (1070-SAFE_X-r)/max(1.0, wc-(20+BLEED))
+        if s > smax: s = max(min(s, S_FLOOR), smax)
         hw = wc*s/2
         x = max(st['x'], r + hw - 20*s + 10)
-        x = min(x, 1080 + 25*s - hw)
+        x = min(x, 1080 - SAFE_X + BLEED*s - hw)
     else:
         l = HEAD['l']
-        smax = (l-10)/max(1.0, wc-45)
-        if s > smax: s = max(min(s, 0.62), smax)
+        smax = (l-10-SAFE_X)/max(1.0, wc-(20+BLEED))
+        if s > smax: s = max(min(s, S_FLOOR), smax)
         hw = wc*s/2
         x = min(st['x'], l - hw + 20*s - 10)
-        x = max(x, -25*s + hw)
+        x = max(x, SAFE_X - BLEED*s + hw)
     st['x'], st['s'] = x, s
 
 def alpha_region(a1080, x0, y0, x1, y1):

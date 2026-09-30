@@ -1,4 +1,4 @@
-# tao-spatial-video v1.1.0 安装
+# tao-spatial-video v1.2.0 安装
 
 ## 安装
 

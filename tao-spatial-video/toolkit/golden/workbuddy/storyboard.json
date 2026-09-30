@@ -4,6 +4,7 @@
   "source": {"path": "~/Desktop/自媒体/workbudy 还是豆包工作.MOV", "hdr": true, "n_src": 7177},
   "hold": 1.5,
   "hold_frames": 91,
+  "safe_x": 0,
   "lines": "lines.json",
   "output": "成片_WorkBuddy还是豆包工作_4K60.mp4",
   "render": {"chunks": [0, 420, 870, 1320, 1770, 2190, 2640, 3090, 3540, 3990, 4410, 4830, 5280, 5730, 6180, 6630, 7050, 7268]},

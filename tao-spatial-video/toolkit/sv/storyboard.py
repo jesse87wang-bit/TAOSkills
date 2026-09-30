@@ -8,6 +8,7 @@ SPR = 3.0            # 素材 PNG 像素 / css 像素
 LX, RX, PY = 222, 890, 760
 NAMED_GLOW = {'cyan': '#22D3EE', 'violet': '#8B5CF6', 'indigo': '#6366F1'}
 SLOTS = ('L', 'R', 'F', 'TOP', 'custom')
+DEFAULT_SAFE_X = 90  # 平台安全区：左右各留 90（布局 px，约 8.3%）。视频号、抖音等在长屏手机上会裁掉左右 5%–9%
 
 # 默认音效：组件类型 → (音效, 声像规则, 增益, 相对出现时刻的偏移)
 #   声像规则 side：左侧 -0.5 / 右侧 +0.5；side4：离中线 100 以上 ±0.4，否则 0；0：居中
@@ -141,6 +142,24 @@ def element(e, tin, tout, sb, row_pos=None):
         raise StoryboardError(f'{e["id"]}: 未知 slot {slot!r}（可选 {SLOTS}）')
     return _finish(d, sb)
 
+def safe_x(sb):
+    v = sb.get('safe_x')
+    return float(DEFAULT_SAFE_X if v is None else v)
+
+def _fit_front(d, w, safe):
+    """前景元素：整体缩进安全区（太宽就等比缩小，出界就平移进来）"""
+    maxw = 1080 - 2*safe
+    if w*d['s'] > maxw:
+        k = maxw/(w*d['s']); d['s'] *= k
+        if 'from' in d:
+            fx, fy, fs, fr = d['from']; d['from'] = (fx, fy, fs*k, fr)
+    hw = w*d['s']/2
+    nx = min(max(d['x'], safe + hw), 1080 - safe - hw)
+    if nx != d['x']:
+        dx = nx - d['x']; d['x'] = nx
+        if 'from' in d:
+            fx, fy, fs, fr = d['from']; d['from'] = (fx+dx, fy, fs, fr)
+
 def _rows(sb, els, size_of):
     """row 排版：fit=总宽度（按素材宽度等比缩放）或 s+gap（固定缩放、居中、间距）"""
     pos = {}
@@ -150,13 +169,18 @@ def _rows(sb, els, size_of):
             continue
         ws = [size_of(e.get('use', e['id']))[0] for e in members]
         y = r['y']
+        safe = safe_x(sb)
         if 'fit' in r:
-            k = r['fit']/sum(ws); x = (1080-r['fit'])/2
+            fit = min(r['fit'], 1080-2*safe) if safe > 0 else r['fit']
+            k = fit/sum(ws); x = (1080-fit)/2
             for e, w in zip(members, ws):
                 pos[e['id']] = (x+w*k/2, y, k); x += w*k
         else:
             s, gap = r['s'], r.get('gap', 10)
-            tot = sum(ws)*s + gap*(len(ws)-1); x = (1080-tot)/2
+            tot = sum(ws)*s + gap*(len(ws)-1)
+            if safe > 0 and tot > 1080-2*safe:
+                s = (1080-2*safe - gap*(len(ws)-1))/sum(ws); tot = sum(ws)*s + gap*(len(ws)-1)
+            x = (1080-tot)/2
             for e, w in zip(members, ws):
                 pos[e['id']] = (x+w*s/2, y, s); x += w*s+gap
     return pos
@@ -186,11 +210,13 @@ def load(path_or_sb, sprite_dir=None, sizes=None, subs_dir=None):
         else:
             w, h = png_size(os.path.join(sprite_dir, sp + '.png'))
         return w/SPR, h/SPR
-    rows = _rows(sb, els, size_of)
+    rows = _rows(sb, els, size_of); safe = safe_x(sb)
     E, SFX = [], []
     for e in els:
         tin = when(e['at'], kws, e['id']+'.at'); tout = when(e.get('out'), kws, e['id']+'.out')
         d = element(e, tin, tout, sb, rows.get(e['id']))
+        if safe > 0 and d['layer'] == 'front':
+            _fit_front(d, size_of(d['sp'])[0], safe)
         E.append(d)
         typ = type_of(e, by_id)
         if 'sfx' in e and e['sfx'] is None:
@@ -219,7 +245,7 @@ def load(path_or_sb, sprite_dir=None, sizes=None, subs_dir=None):
     if subs_dir and os.path.exists(os.path.join(subs_dir, 'subs.json')):
         with open(os.path.join(subs_dir, 'subs.json'), encoding='utf-8') as f:
             subs = [tuple(s) for s in json.load(f)]
-    meta = dict(mov=src_path(sb), hdr=sb['source'].get('hdr', True), n_src=sb['source']['n_src'],
+    meta = dict(mov=src_path(sb), hdr=sb['source'].get('hdr', True), n_src=sb['source']['n_src'], safe_x=safe,
                 hold=sb.get('hold', 1.5), total_frames=total_frames(sb), total_sec=total_sec(sb), title=sb.get('title', ''))
     return dict(els=E, subs=subs, fx=fx, sub_index={s[2]: s[2] for s in subs}, sfx=SFX, meta=meta)
 
