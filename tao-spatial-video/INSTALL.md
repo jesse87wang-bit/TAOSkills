@@ -30,4 +30,4 @@ python3 make_video.py selftest --pixels
 ## 从 v1.0 升级
 
 v1.0 的 `seq.py` / `sprites.py` 写法不再使用，改为分镜表 `storyboard.json`（格式见 `toolkit/STORYBOARD.md`，完整示例 `toolkit/golden/workbuddy/storyboard.json`）。
-v1.0.0 的代码保留在 Git 标签 `tao-spatial-video-v1.0.0`。
+v1.0.0 的代码保留在分支 [`tao-spatial-video-v1.0`](https://github.com/jesse87wang-bit/TAOSkills/tree/tao-spatial-video-v1.0/tao-spatial-video)。
