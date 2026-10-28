@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>商务差旅助手 · 演示版</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <aside id="side">
+    <div class="brand"><span class="logo">✈</span><div><b>商务差旅助手</b><small>网页演示版</small></div></div>
+    <nav id="nav">
+      <div class="grp">总览</div>
+      <a href="#/home" data-p="home">今日工作台</a>
+      <div class="grp">一趟出差</div>
+      <a href="#/need" data-p="need">① 出差需求</a>
+      <a href="#/plan" data-p="plan">② 方案对比</a>
+      <a href="#/package" data-p="package">③ 行程包与确认</a>
+      <a href="#/brief" data-p="brief">④ 早报与提醒</a>
+      <a href="#/change" data-p="change">⑤ 航班变动</a>
+      <a href="#/expense" data-p="expense">⑥ 报销检查</a>
+      <div class="grp">规则与管理</div>
+      <a href="#/rules" data-p="rules">规则与制度</a>
+      <a href="#/log" data-p="log">操作日志</a>
+      <a href="#/settings" data-p="settings">设置与身份</a>
+    </nav>
+    <div class="side-foot" id="sideFoot"></div>
+  </aside>
+  <div id="mainwrap">
+    <header id="top">
+      <button id="menuBtn" class="ghost" aria-label="菜单">☰</button>
+      <label class="sel"><span>出差</span><select id="tripSel"></select></label>
+      <label class="sel"><span>当前身份</span><select id="roleSel"></select></label>
+      <span class="pill warn" id="dataPill">样例数据</span>
+      <span class="pill" id="modelPill">离线</span>
+    </header>
+    <main id="main"><div class="loading">正在连接本地服务…</div></main>
+  </div>
+  <button id="agentBtn" title="问差旅助理">问助理</button>
+  <section id="agent" class="hidden" aria-label="差旅助理">
+    <div class="ag-head"><b>差旅助理</b><span id="agMode" class="pill">离线</span><button class="ghost" id="agClose">✕</button></div>
+    <div class="ag-tip">只用程序结果回答；不会替你下单、付款、审批。</div>
+    <div id="agChips"></div>
+    <div id="agList"></div>
+    <form id="agForm"><input id="agInput" placeholder="问点什么，比如：为什么不推荐最便宜的？" autocomplete="off"><button>发送</button></form>
+  </section>
+  <div id="toast"></div>
+  <div id="modal" class="hidden"><div class="mbox"><div id="mbody"></div><div class="mfoot"><button class="ghost" id="mCancel">取消</button><button id="mOk">确认</button></div></div></div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

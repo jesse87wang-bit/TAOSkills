@@ -42,3 +42,19 @@ https://github.com/jesse87wang-bit/TAOSkills/tree/main/tao-spatial-video
 
 请完整加载整个目录（包括 toolkit/）。安装后用「用 tao-spatial-video 把这条口播做成片」调用。
 ```
+
+### tao-training-demo
+
+**培训演示 AI 产品 Demo 制作**。给企业 AI 培训、工作坊做演示案例，每个案例交付：Claude 做的网页 Demo（双击 启动.command 打开）+ WorkBuddy 版全套（构建00—11 指令全文、每一步操作和检查、构建与演示手册、演示说明、员工一句话入口、技能包、兜底样例）+ 讲师参考。
+
+- 安装：[`tao-training-demo/INSTALL.md`](tao-training-demo/INSTALL.md)
+- Skill：[`tao-training-demo/SKILL.md`](tao-training-demo/SKILL.md)
+- 说明：[`tao-training-demo/README.md`](tao-training-demo/README.md)
+- Changelog：[`tao-training-demo/CHANGELOG.md`](tao-training-demo/CHANGELOG.md)
+
+```text
+请从 GitHub 安装并启用 tao-training-demo：
+https://github.com/jesse87wang-bit/TAOSkills/tree/main/tao-training-demo
+
+请完整加载整个目录。安装后用「用 tao-training-demo 做一个 XX 助手」调用。
+```
