@@ -1,17 +1,13 @@
 {
   "name": "tao-spatial-video",
-  "version": "1.0.0",
+  "version": "1.4.5",
   "entrypoint": "SKILL.md",
-  "toolkit": "toolkit/",
-  "output": {
-    "resolution": "2160x3840",
-    "fps": 60,
-    "codec": "h264-high",
-    "color": "bt709"
-  },
+  "cli": "make_video.py",
+  "output": {"resolution": "2160x3840", "fps": 60, "codec": "h264-high", "crf": 15, "color": "bt709", "audio": "aac-320k"},
   "requires": {
-    "device": ["ffmpeg (zscale)", "python3", "numpy", "opencv", "onnxruntime", "sherpa-onnx"],
-    "cloud": ["python3", "playwright", "chromium", "Noto Sans CJK"],
-    "user_assets": ["toolkit/sfx/*.wav"]
+    "device": ["ffmpeg (zscale)", "python3", "numpy", "opencv-python-headless", "onnxruntime", "sherpa-onnx", "soundfile"],
+    "cloud": ["python3", "playwright + chromium", "pillow", "opencv-python-headless", "onnxruntime"],
+    "auto_download": ["fonts (Poppins, Noto Sans CJK SC 2.004)", "models (RVM, silero VAD, SenseVoice)"],
+    "user_assets": ["sfx/*.wav（剪映音效，自有授权）"]
   }
 }

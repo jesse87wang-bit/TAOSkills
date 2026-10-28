@@ -1,6 +1,8 @@
-# tao-spatial-video 合成器（在用户电脑的 Linux 环境里跑）
+# tao-spatial-video 合成器（渲染核心）
 # 原片像素不动，只改玻璃卡/文字所在区域；人物用 RVM 抠像，卡片放在人物身后时会被人挡住。
 # 坐标约定：时间轴里的 x/y 用 1080×1920 布局坐标，渲染时 ×K(=2) 到 4K；素材 PNG 是 3 倍 css 像素。
+# ⚠ 这个文件的算法与第一条成片逐行一致（make_video.py selftest 会核对源码指纹），改一个数字成片就会变。
+#   路径由 configure() 设置，不要在这里写死。
 import cv2, numpy as np, math, sys, os, json, subprocess, time
 cv2.setNumThreads(2)
 W, H, FPS = 2160, 3840, 60
@@ -9,8 +11,23 @@ SPR = 3.0          # 素材像素 / css 像素
 BASE = os.path.dirname(os.path.abspath(__file__))
 SP = os.environ.get('SV_SPRITES', BASE+'/sp3/')
 SUBDIR = os.environ.get('SV_SUBS', BASE+'/sub4k/')
-MOV = os.environ.get('SV_MOV', '')          # 由 render_chunk.py 设置
-SRC_HDR = os.environ.get('SV_HDR', '1') == '1'   # iPhone HLG/杜比视界 → 1；普通 SDR 素材 → 0
+MOV = os.environ.get('SV_MOV', '')
+SRC_HDR = os.environ.get('SV_HDR', '1') == '1'   # iPhone HLG/杜比视界 → True；普通 SDR 素材 → False
+RVM = os.environ.get('SV_RVM', os.path.expanduser('~/work/sv/rvm.onnx'))
+# 平台安全区（1080 布局坐标，每侧留白）：视频号等平台在长屏手机上会裁掉左右各 5%–9%。
+#   SAFE_X=0, BLEED=25, S_FLOOR=0.62 是 v1.0/v1.1 的旧行为（卡片可贴边、略出画），只用于复现旧片。
+SAFE_X, BLEED, S_FLOOR = 0.0, 25, 0.62
+def configure(sprites=None, subs=None, mov=None, hdr=None, rvm=None, safe_x=None):
+    global SP, SUBDIR, MOV, SRC_HDR, RVM, SAFE_X, BLEED, S_FLOOR
+    if sprites: SP = os.path.join(sprites, '')
+    if subs: SUBDIR = os.path.join(subs, '')
+    if mov: MOV = mov
+    if hdr is not None: SRC_HDR = bool(hdr)
+    if rvm: RVM = rvm
+    if safe_x is not None:
+        if safe_x > 0: SAFE_X, BLEED, S_FLOOR = float(safe_x), 0, 0.5    # 玻璃框完整留在安全区内；空间不够时宁可缩小也不让字被头挡住
+        else: SAFE_X, BLEED, S_FLOOR = 0.0, 25, 0.62
+        globals()['update_head'] = update_head_core if SAFE_X > 0 else _update_head_v10   # v1.4.2
 SDR_VF = "scale=2160:3840:flags=lanczos,format=bgr24,fps=60"
 TONEMAP = ("zscale=tin=arib-std-b67:min=bt2020nc:pin=bt2020:rin=tv:t=linear:npl=100,format=gbrpf32le,"
            "zscale=p=bt709,tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=bgr24,fps=60")
@@ -93,7 +110,7 @@ class Matte:
     def __init__(self):
         import onnxruntime as ort
         so = ort.SessionOptions(); so.intra_op_num_threads = 3
-        self.s = ort.InferenceSession(os.environ.get('SV_RVM', os.path.expanduser('~/work/sv/rvm.onnx')), so, providers=['CPUExecutionProvider'])
+        self.s = ort.InferenceSession(RVM, so, providers=['CPUExecutionProvider'])
         self.rec = [np.zeros([1,1,1,1], np.float32)]*4; self.dr = np.array([0.25], np.float32)
     def __call__(self, f4k):
         sm = cv2.resize(f4k, (1080, 1920), interpolation=cv2.INTER_AREA)
@@ -109,24 +126,41 @@ def update_head(a1080):
     if HEAD['l'] is None: HEAD['l'], HEAD['r'] = l, r
     else:
         HEAD['l'] += (l-HEAD['l'])*0.06; HEAD['r'] += (r-HEAD['r'])*0.06
+_update_head_v10 = update_head          # 原算法（safe_x=0 / 复现旧片）
+def update_head_core(a1080):
+    """v1.4.2 留安全区时用：只量和头肩连成一体的部分，抬起来的手不算（见 patch_v142 说明）。用户 2026-10-04 确认必须保持，不要改回去。"""
+    band = a1080[470:990] > 0.5
+    top = band[:band.shape[0]//3]; ct = np.where(top.any(0))[0]
+    if len(ct) == 0: ct = np.where(band.any(0))[0]
+    if len(ct) == 0: return
+    c = int(np.median(ct)); L, R = [], []
+    for row in band[::4]:
+        if not row[c]: continue
+        zl = np.where(~row[:c])[0]; zr = np.where(~row[c:])[0]
+        L.append(zl.max()+1 if len(zl) else 0); R.append(c+zr.min()-1 if len(zr) else band.shape[1]-1)
+    if not L: return
+    l, r = float(min(L)), float(max(R))
+    if HEAD['l'] is None: HEAD['l'], HEAD['r'] = l, r
+    else:
+        HEAD['l'] += (l-HEAD['l'])*0.06; HEAD['r'] += (r-HEAD['r'])*0.06
 def adjust_side(e, st):
     if HEAD['l'] is None: return
     wc = sprite(e['sp']).shape[1]/SPR
     s = st['s']
     if e['x'] > 540:
         r = HEAD['r']
-        smax = (1070-r)/max(1.0, wc-45)
-        if s > smax: s = max(min(s, 0.62), smax)
+        smax = (1070-SAFE_X-r)/max(1.0, wc-(20+BLEED))
+        if s > smax: s = max(min(s, S_FLOOR), smax)
         hw = wc*s/2
         x = max(st['x'], r + hw - 20*s + 10)
-        x = min(x, 1080 + 25*s - hw)
+        x = min(x, 1080 - SAFE_X + BLEED*s - hw)
     else:
         l = HEAD['l']
-        smax = (l-10)/max(1.0, wc-45)
-        if s > smax: s = max(min(s, 0.62), smax)
+        smax = (l-10-SAFE_X)/max(1.0, wc-(20+BLEED))
+        if s > smax: s = max(min(s, S_FLOOR), smax)
         hw = wc*s/2
         x = min(st['x'], l - hw + 20*s - 10)
-        x = max(x, -25*s + hw)
+        x = max(x, SAFE_X - BLEED*s + hw)
     st['x'], st['s'] = x, s
 
 def alpha_region(a1080, x0, y0, x1, y1):

@@ -1,3 +1,11 @@
-toolkit/sfx/*.wav
-toolkit/fonts/*.ttf
+# 剪映音效需使用者自有授权，不随仓库分发
+sfx/*.wav
+# 字体由 make_video.py setup 自动下载并校验
+fonts/*.ttf
+fonts/*.otf
+# 运行产物与离线备份
+build/
+_离线模型/
 __pycache__/
+# 运行时生成的私有 fontconfig
+fonts/.fontconfig/
