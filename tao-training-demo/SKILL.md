@@ -24,7 +24,7 @@ v3.0.0 · 2026-10-28（版本和更新规则见文末“本技能自己的版本
 - assets/网页Demo骨架_商务差旅/：app/、web/、tests/、三个脚本，复制改造即可
 - examples/：尚航 01/02/05 原件摘录
 
-能读到时，动手前先读范例和 references；读不到时按本文件做，本文件是自足的。
+同样的 references/、scripts/、assets/ 也在 GitHub：https://github.com/jesse87wang-bit/TAOSkills/tree/main/tao-training-demo（公开仓库，不含 examples/ 客户摘录）。能读到时，动手前先读范例和 references；读不到时按本文件做，本文件是自足的。
 
 ## 最重要的一条：只增不减
 
