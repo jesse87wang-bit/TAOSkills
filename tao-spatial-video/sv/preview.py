@@ -23,7 +23,7 @@ def render(plan, stills, out_jpg, tile_w=540):
         f = cv2.imread(fr); mt = comp4k.Matte()
         for _ in range(4): a = mt(f)
         comp4k.HEAD['l'] = None; comp4k.update_head(a)
-        comp4k.render_frame(Enc, f, a, int(round(t*60)), plan['els'], plan['subs'], plan['fx'], plan['sub_index'])
+        comp4k.render_frame(Enc, f, a, int(round(t*comp4k.FPS)), plan['els'], plan['subs'], plan['fx'], plan['sub_index'])
         img = np.frombuffer(Enc.stdin.buf, np.uint8).reshape(comp4k.H, comp4k.W, 3)
         tile = cv2.resize(img, (tile_w, tile_w*16//9), interpolation=cv2.INTER_AREA)
         cv2.putText(tile, f'{t:.2f}s', (12, 36), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,255,255), 2, cv2.LINE_AA)

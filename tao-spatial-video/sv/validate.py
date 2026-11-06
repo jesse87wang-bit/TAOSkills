@@ -45,6 +45,8 @@ def check(path, sprite_dir=None):
         sb = SB.read(path)
     except Exception as ex:
         return [f'读不了分镜表：{ex}'], []
+    try: SB.fps(sb)
+    except ValueError as ex: return [str(ex)], []
     if sb.get('schema') != SCHEMA:
         E.append(f'schema 应为 "{SCHEMA}"')
     src = sb.get('source', {})

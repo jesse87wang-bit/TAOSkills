@@ -3,10 +3,19 @@ name: "tao-spatial-video"
 description: "把真人口播原片+文稿做成「真实背景里玻璃卡从人物身后浮出」的科技感4K60成片。用户给出原视频位置和口播稿、说做成片/包装口播/按上次效果出片时使用。"
 ---
 
-# tao-spatial-video｜口播原片 → 空间感玻璃卡 4K60 成片（工具包 v1.4.5）
+# tao-spatial-video｜口播原片 → 空间感玻璃卡 4K60 成片（工具包 v1.6.0）
 
 风格基准（第一条成品）：`自媒体/30-口播稿/加更-WorkBuddy还是豆包工作/成片_WorkBuddy还是豆包工作_4K60.mp4`
 工具包：`自媒体/bin/spatial_video/`。**先读 `README.md` 和 `STORYBOARD.md`**，所有步骤都走 `make_video.py`，从一份分镜表 `storyboard.json` 出发；不要再手写 seq.py / sprites.py（那是 v1.0 的做法，备份在 `_v1.0/`）。
+
+## 第 0 步：剪口误（v1.5.0，原片有重录、口误、长停顿时先做）
+
+1. `make_video.py cut 原片 --script 口播稿.md`（没有口播稿就不带 --script）→ 生成 `_剪辑_<原片名>/cut_plan_报告.md`
+2. **把报告给用户确认**：列出要删的句子和原因、标了「文稿外」的句子，用户说改哪句就改 `cut_plan.json` 里那句的 `keep`
+3. `make_video.py cutapply cut_plan.json` → `净剪_<原片名>.mov` + `asr_cut.json`
+4. 之后的包装把净剪片当原片：`probe 净剪片`，`align asr_cut.json lines.txt lines.json`（不用再 asr）
+用户说「直接剪、不用问」时可以加 `--apply` 一步做完，但报告照样发给用户。
+原片不是 2160×3840 时，cutapply 会自动放大成竖屏 4K；不剪辑的话先跑 `make_video.py norm 原片`。
 
 ## 用户要的效果（已确认，别改）
 
@@ -117,3 +126,7 @@ device_bash 报「Workspace still downloading / failed to start」时，Linux �
 ## 收尾回复
 
 一句话说成片放在哪；核对结果（分辨率 / 帧率 / 帧数 = 原片 / 时长 / 片尾无静帧）；预览时做过的取舍；提醒清理 `_工作文件/`（分片包、静帧、总览图）和 `~/work/jobN`；给一个下一步。
+
+## v1.6.0 规格扩展（用户 2026-11-06 确认）
+
+听涛 AI Studio 可保留 1080×1920、30fps。分镜表及剪辑计划显式写 `output_profile: {width:1080,height:1920,fps:30}`，帧数以净剪后实测帧数为准。该配置优先于上面的 4K60 默认描述。内部复用 4K 合成画布，最终缩小输出；不改变安全区、头肩遮挡和卡片样式。缺省配置仍是 4K60。工作台的版本目录、审核与导出按钮承担本地项目交付；不自动发布。

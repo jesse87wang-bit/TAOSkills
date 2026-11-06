@@ -3,7 +3,10 @@
 import os, json, math, re, struct
 import numpy as np
 
+from .profiles import get as output_profile
 FPS = 60
+
+def fps(sb): return output_profile(sb)["fps"]
 SPR = 3.0            # 素材 PNG 像素 / css 像素
 LX, RX, PY = 222, 890, 760
 NAMED_GLOW = {'cyan': '#22D3EE', 'violet': '#8B5CF6', 'indigo': '#6366F1'}
@@ -62,10 +65,10 @@ def total_frames(sb):
     # 片尾定格：hold_frames（精确帧数）优先，否则 hold 秒数 ×60。
     # v1.3.1 起默认 0（用户 2026-10-02：成片结尾不要静帧，原片结束就结束）；基准 golden 分镜表显式写了 hold
     hf = sb.get('hold_frames')
-    return sb['source']['n_src'] + (int(hf) if hf is not None else int(round(sb.get('hold', 0)*FPS)))
+    return sb['source']['n_src'] + (int(hf) if hf is not None else int(round(sb.get('hold', 0)*fps(sb))))
 
 def total_sec(sb):
-    return total_frames(sb)/FPS
+    return total_frames(sb)/fps(sb)
 
 # ---------------------------------------------------------------- 关键词卡点
 class Keywords:
@@ -250,6 +253,7 @@ def load(path_or_sb, sprite_dir=None, sizes=None, subs_dir=None):
             subs = [tuple(s) for s in json.load(f)]
     meta = dict(mov=src_path(sb), hdr=sb['source'].get('hdr', True), n_src=sb['source']['n_src'], safe_x=safe,
                 hold=sb.get('hold', 0), total_frames=total_frames(sb), total_sec=total_sec(sb), title=sb.get('title', ''))
+    if 'output_profile' in sb: meta['fps'] = fps(sb)
     return dict(els=E, subs=subs, fx=fx, sub_index={s[2]: s[2] for s in subs}, sfx=SFX, meta=meta)
 
 def dump(plan):
@@ -262,7 +266,7 @@ def dump(plan):
     m = plan['meta']
     return {'els': [conv(e) for e in plan['els']], 'sfx': [list(s) for s in plan['sfx']],
             'streaks': conv(plan['fx']['streaks']),
-            'boost': [round(plan['fx']['boost'](i/FPS), 9) for i in range(m['total_frames'])],
+            'boost': [round(plan['fx']['boost'](i/m.get('fps', FPS)), 9) for i in range(m['total_frames'])],
             'meta': {'n_src': m['n_src'], 'total_frames': m['total_frames'], 'total_sec': m['total_sec'], 'hdr': m['hdr']}}
 
 def sprite_items(sb, only=None):

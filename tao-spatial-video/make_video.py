@@ -25,6 +25,7 @@ import argparse, os, sys, json, subprocess, math, re, time, shutil
 KIT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, KIT)
 from sv import storyboard as SB
+from sv import profiles
 
 FPS = 60
 DEFAULT_CHUNK = 280          # 每段帧数：在用户电脑上单段约 75–95 秒（单次命令 180 秒上限，450 会超时）
@@ -130,16 +131,18 @@ def cmd_probe(a):
     hdr = v.get('color_transfer') in ('arib-std-b67', 'smpte2084')
     print(f'分辨率 {w}×{h}  帧率 {v.get("avg_frame_rate")}  时长 {dur:.3f}s  编码 {v.get("codec_name")} {v.get("pix_fmt")}  '
           f'color_transfer={v.get("color_transfer")}  → {"HDR（要色调映射）" if hdr else "SDR"}')
-    if (w, h) != (2160, 3840):
-        print('⚠ 不是 2160×3840 竖屏 4K：合成器按 4K 竖屏设计，先和用户确认')
+    profile = dict(width=1080,height=1920,fps=30) if a.profile=='1080p30' else profiles.DEFAULT
+    if (w,h)!=(profile['width'],profile['height']):
+        print('⚠ 原片与输出规格不同；先确认尺寸转换')
+    print('output_profile:',json.dumps(profile))
     print('分镜表 source 字段：')
-    print(json.dumps({'path': a.video, 'hdr': hdr, 'n_src': int(math.floor(dur*FPS))}, ensure_ascii=False))
+    print(json.dumps({'path': a.video, 'hdr': hdr, 'n_src': int(math.floor(dur*profile['fps']))}, ensure_ascii=False))
 
 def cmd_framing(a):
     from sv import framing, comp4k, assets
     comp4k.configure(rvm=assets.rvm_path())
     if a.src.endswith('.json'):
-        sb = SB.read(a.src); mov = SB.src_path(sb); hdr = sb['source'].get('hdr', True); dur = sb['source']['n_src']/FPS
+        sb = SB.read(a.src); mov = SB.src_path(sb); hdr = sb['source'].get('hdr', True); dur = sb['source']['n_src']/SB.fps(sb); profiles.configure(sb)
         safe = SB.safe_x(sb) if a.safe is None else a.safe
     else:
         r = subprocess.run(['ffprobe','-v','error','-print_format','json','-show_format','-show_streams',a.src], capture_output=True, text=True, check=True)
@@ -156,6 +159,33 @@ def cmd_asr(a):
 
 def cmd_align(a):
     from sv import speech; speech.align(a.asr, a.lines_txt, a.out)
+
+def cmd_cut(a):
+    """原片 → 转写 → 剪辑计划（+ 报告）；--apply 直接出净剪片"""
+    from sv import speech, cut
+    if not os.path.exists(a.video): die(f'找不到原片 {a.video}')
+    out = a.out or os.path.join(os.path.dirname(os.path.abspath(a.video)), '_剪辑_' + os.path.splitext(os.path.basename(a.video))[0])
+    os.makedirs(out, exist_ok=True)
+    asr_json = os.path.join(out, 'asr.json'); plan_json = os.path.join(out, 'cut_plan.json')
+    if not os.path.exists(asr_json) or a.reasr:
+        speech.asr(a.video, asr_json)
+    cut.plan(asr_json, a.video, plan_json, script=a.script, pause=a.pause)
+    print(f'\n剪辑计划：{plan_json}\n报告：{os.path.splitext(plan_json)[0]}_报告.md')
+    if a.apply:
+        cmd_cutapply(argparse.Namespace(plan=plan_json, out=None))
+    else:
+        print('先把报告给用户确认（尤其是「删除」和「文稿外」的句子），再运行：make_video.py cutapply', plan_json)
+
+def cmd_norm(a):
+    from sv import cut; cut.normalize(a.video, a.out)
+
+def cmd_cutapply(a):
+    from sv import cut
+    v = cut.apply(a.plan, a.out, rebuild=not getattr(a,'exact',False))
+    asr_json = os.path.join(os.path.dirname(os.path.abspath(a.plan)), 'asr.json')
+    if os.path.exists(asr_json):
+        cut.remap_asr(a.plan, asr_json, os.path.join(os.path.dirname(os.path.abspath(a.plan)), 'asr_cut.json'))
+    print('下一步（包装）：probe 净剪片 → 用 asr_cut.json 做 align（不用再转写）→ 写分镜表 → all')
 
 # ------------------------------------------------------------------ 设计
 def cmd_validate(a):
@@ -207,6 +237,7 @@ def cmd_plan(a):
 def cmd_preview(a):
     from sv import preview, comp4k, assets
     sb = SB.read(a.storyboard); p = P(sb); plan = load_plan(sb)
+    profiles.configure(sb)
     comp4k.configure(sprites=p['sprites'], subs=p['subs'], mov=plan['meta']['mov'], hdr=plan['meta']['hdr'], rvm=assets.rvm_path(),
                      safe_x=plan['meta']['safe_x'])
     stills = []
@@ -227,6 +258,7 @@ def cmd_grab(a):
     from sv import preview
     sb = SB.read(a.storyboard); p = P(sb); d = os.path.join(p['build'], 'stills'); os.makedirs(d, exist_ok=True)
     mov = SB.src_path(sb); hdr = sb['source'].get('hdr', True)
+    profiles.configure(sb)
     for t in a.at:
         out = os.path.join(d, f'{t:.2f}.jpg'); preview.grab(mov, t, out, hdr); print('✓', out)
 
@@ -259,7 +291,7 @@ def render_one(sb, i0, i1):
     if not os.path.exists(m['mov']): die(f'找不到原片 {m["mov"]}')
     comp4k.configure(sprites=p['sprites'], subs=p['subs'], mov=m['mov'], hdr=m['hdr'], rvm=assets.rvm_path(), safe_x=m['safe_x'])
     os.makedirs(p['chunks'], exist_ok=True); out = chunk_file(sb, i0); t0 = time.time()
-    comp4k.render_chunk(plan, out, 0.0, i0, i1, n_src=m['n_src'])
+    profiles.render(sb, comp4k, plan, out, i0, i1, m['n_src'])
     n = count_frames(out)
     print(f'chunk {i0}-{i1} frames={n} expected={i1-i0} time={time.time()-t0:.0f}s', flush=True)
     if n != i1-i0: die('帧数不对：把这一段拆小重跑')
@@ -283,6 +315,9 @@ def cmd_assemble(a):
         for i0, _ in plan: f.write(f"file '{os.path.basename(chunk_file(sb, i0))}'\n")
     subprocess.run(['ffmpeg','-v','error','-y','-f','concat','-safe','0','-i',lst,'-i',p['audio'],'-map','0:v','-map','1:a','-c:v','copy',
                     '-c:a','aac','-b:a','320k','-ar','48000','-movflags','+faststart','-shortest',out], check=True)
+    if profiles.get(sb) != profiles.DEFAULT:
+        tagged=out+'.bt709.mp4'
+        profiles.tag_bt709(out,tagged); os.replace(tagged,out)
     print('✓ 成片', out)
 
 def cmd_verify(a):
@@ -291,8 +326,9 @@ def cmd_verify(a):
     d = json.loads(r.stdout); v = next(s for s in d['streams'] if s['codec_type'] == 'video')
     au = [s for s in d['streams'] if s['codec_type'] == 'audio']
     n = count_frames(out); want = SB.total_frames(sb)
-    checks = [('分辨率 2160×3840', (v['width'], v['height']) == (2160, 3840), f'{v["width"]}×{v["height"]}'),
-              ('帧率 60/1', v['r_frame_rate'] == '60/1', v['r_frame_rate']),
+    profile = profiles.get(sb)
+    checks = [('输出分辨率', (v['width'], v['height']) == (profile['width'], profile['height']), f'{v["width"]}×{v["height"]}'),
+              ('输出帧率', v['r_frame_rate'] == str(profile['fps'])+'/1', v['r_frame_rate']),
               (f'帧数 {want}', n == want, n),
               ('H.264 High', v['codec_name'] == 'h264' and v.get('profile') == 'High', f'{v["codec_name"]} {v.get("profile")}'),
               ('bt709', v.get('color_transfer') == 'bt709' and v.get('color_primaries') == 'bt709', f'{v.get("color_primaries")}/{v.get("color_transfer")}'),
@@ -348,9 +384,15 @@ def main():
     sp = ap.add_subparsers(dest='cmd', required=True)
     sp.add_parser('doctor').set_defaults(fn=cmd_doctor)
     s = sp.add_parser('setup'); s.add_argument('--fonts', action='store_true'); s.add_argument('--models', action='store_true'); s.set_defaults(fn=cmd_setup)
-    s = sp.add_parser('probe'); s.add_argument('video'); s.set_defaults(fn=cmd_probe)
+    s = sp.add_parser('probe'); s.add_argument('video'); s.add_argument('--profile',choices=['4k60','1080p30'],default='4k60'); s.set_defaults(fn=cmd_probe)
     s = sp.add_parser('framing'); s.add_argument('src'); s.add_argument('--safe', type=float); s.add_argument('--n', type=int, default=6); s.set_defaults(fn=cmd_framing)
     s = sp.add_parser('asr'); s.add_argument('video'); s.add_argument('out'); s.set_defaults(fn=cmd_asr)
+    s = sp.add_parser('cut', help='自动剪口误：转写 → 剪辑计划 → （--apply）净剪片')
+    s.add_argument('video'); s.add_argument('--script', help='口播稿（txt/md），有就对照检查文稿外的句子'); s.add_argument('--out', help='工作目录，默认在原片旁边')
+    s.add_argument('--pause', type=float, default=0.45, help='超过多少秒的停顿要压缩，默认 0.45'); s.add_argument('--apply', action='store_true', help='不等确认，直接出净剪片')
+    s.add_argument('--reasr', action='store_true', help='重新转写'); s.set_defaults(fn=cmd_cut)
+    s = sp.add_parser('norm', help='不剪辑，只把原片统一成竖屏 4K（2160×3840）'); s.add_argument('video'); s.add_argument('--out'); s.set_defaults(fn=cmd_norm)
+    s = sp.add_parser('cutapply', help='按（改过的）剪辑计划出净剪片 + 剪后转写'); s.add_argument('plan'); s.add_argument('--out'); s.add_argument('--exact', action='store_true', help='按 keep 精确区间执行，不从 phrases 重建（工作台已审核切点）'); s.set_defaults(fn=cmd_cutapply)
     s = sp.add_parser('align'); s.add_argument('asr'); s.add_argument('lines_txt'); s.add_argument('out'); s.set_defaults(fn=cmd_align)
     for name, fn in [('validate', cmd_validate), ('subs', cmd_subs), ('plan', cmd_plan), ('mix', cmd_mix), ('all', cmd_all)]:
         s = sp.add_parser(name); s.add_argument('storyboard'); s.set_defaults(fn=fn)

@@ -1,4 +1,4 @@
-# tao-spatial-video 工具包 v1.4.5
+# tao-spatial-video 工具包 v1.6.0
 
 一条命令行 `make_video.py`，从一份分镜表出发，把真人口播原片做成「真实背景里玻璃卡从人物身后浮出」的 4K60 成片。
 分镜表怎么写见 [`STORYBOARD.md`](STORYBOARD.md)；用 Python 生成分镜表的辅助脚本和完整示例在 [`authoring/`](authoring/README.md)。
@@ -26,6 +26,17 @@ toolkit/
 ├── sfx/                 音效（自备，见 sfx/README.md）
 └── fonts/               字体（setup 自动下载）
 ```
+
+## v1.5.0 更新：自动剪口误
+
+```bash
+python3 make_video.py cut 原片.MOV --script 口播稿.md     # 转写 + 剪辑计划 + 报告（先给用户确认）
+#   要改：编辑 cut_plan.json 里 phrases[].keep
+python3 make_video.py cutapply 原片旁边的_剪辑_xxx/cut_plan.json   # 净剪片 + asr_cut.json
+python3 make_video.py probe 净剪_xxx.mov                  # 之后按原流程包装，align 直接用 asr_cut.json
+```
+
+规则：重录留最后一次、片尾残句删、句首嗯/呃删（句中啊保留）、>0.45 秒停顿压到 0.25 秒、文稿外句子只标不删。HLG 原片剪完仍是 HLG。
 
 ## v1.4.5 更新
 
@@ -136,3 +147,14 @@ meta.json：`{"id","title","column","biz_tier","cta","成品","分镜表","src_n
 ## 渲染参数（已和用户确认，不要改）
 
 2160×3840 · 60fps · H.264 High L5.2 · CRF 15 · yuv420p · bt709 · AAC 320k 48kHz；iPhone HLG/杜比视界原片用 zscale（linear, npl=100）→ hable → bt709 色调映射；原片像素只在卡片区域被改动。
+
+## v1.6.0：1080p30 输出适配
+
+2026-11-06 用户确认保留 1080×1920、30fps。分镜表添加 `"output_profile": {"width":1080,"height":1920,"fps":30}`；`source.n_src` 填该帧率下净剪后的真实帧数。省略仍走原 4K60 路径。
+
+时间轴、字幕、音轨、预览和验收按该帧率计算。复用原 4K 合成画布与头肩遮挡算法，再缩小编码到 1080p30；不是增加原片细节。合成核心 comp4k.py 保持原样。
+
+剪辑计划同样可加 `output_profile` 保留 1080p30。`cutapply --exact` 使用工作台已经编辑的 `keep` 区间，普通 cutapply 仍从 phrases 重建。仅支持以上两种规格，其他规格明确报错。
+
+探测 1080p30：`python make_video.py probe 原片.MOV --profile 1080p30`；输出对应 source.n_src。
+扩展回归：`python -m unittest sv.test_profiles`，再运行原 `selftest`。

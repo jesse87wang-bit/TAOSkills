@@ -1,13 +1,51 @@
 {
   "name": "tao-spatial-video",
-  "version": "1.4.5",
+  "version": "1.6.0",
   "entrypoint": "SKILL.md",
   "cli": "make_video.py",
-  "output": {"resolution": "2160x3840", "fps": 60, "codec": "h264-high", "crf": 15, "color": "bt709", "audio": "aac-320k"},
+  "output": {
+    "resolution": "2160x3840",
+    "fps": 60,
+    "codec": "h264-high",
+    "crf": 15,
+    "color": "bt709",
+    "audio": "aac-320k"
+  },
   "requires": {
-    "device": ["ffmpeg (zscale)", "python3", "numpy", "opencv-python-headless", "onnxruntime", "sherpa-onnx", "soundfile"],
-    "cloud": ["python3", "playwright + chromium", "pillow", "opencv-python-headless", "onnxruntime"],
-    "auto_download": ["fonts (Poppins, Noto Sans CJK SC 2.004)", "models (RVM, silero VAD, SenseVoice)"],
-    "user_assets": ["sfx/*.wav（剪映音效，自有授权）"]
-  }
+    "device": [
+      "ffmpeg (zscale)",
+      "python3",
+      "numpy",
+      "opencv-python-headless",
+      "onnxruntime",
+      "sherpa-onnx",
+      "soundfile"
+    ],
+    "cloud": [
+      "python3",
+      "playwright + chromium",
+      "pillow",
+      "opencv-python-headless",
+      "onnxruntime"
+    ],
+    "auto_download": [
+      "fonts (Poppins, Noto Sans CJK SC 2.004)",
+      "models (RVM, silero VAD, SenseVoice)"
+    ],
+    "user_assets": [
+      "sfx/*.wav（剪映音效，自有授权）"
+    ]
+  },
+  "output_profiles": [
+    {
+      "width": 2160,
+      "height": 3840,
+      "fps": 60
+    },
+    {
+      "width": 1080,
+      "height": 1920,
+      "fps": 30
+    }
+  ]
 }
