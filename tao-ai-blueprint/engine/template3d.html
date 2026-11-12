@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 运转全景</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Rajdhani:wght@600;700&display=swap" media="print" onload="this.media='all'">
+<style>
+:root{--bg:#0B0D11;--panel:rgba(16,19,24,.88);--line:#262C35;--ink:#E8ECF1;--muted:#8B95A3;--lime:#C6F432;--amber:#F2B84B;--cyan:#36C5F0;--red:#FF6B4A;
+--font:'Noto Sans SC',"PingFang SC","Microsoft YaHei",sans-serif;--num:'Rajdhani','Noto Sans SC',sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;overflow:hidden}
+#app{position:relative;width:100vw;height:100vh}
+#stage{position:absolute;inset:0;overflow:hidden}
+#stage canvas{display:block;touch-action:none}
+/* 斜角面板，仿大屏 */
+.p{background:var(--panel);border:1px solid var(--line);position:relative;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));backdrop-filter:blur(6px)}
+.p::before{content:"";position:absolute;left:0;top:0;width:22px;height:3px;background:var(--lime)}
+.ph{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px 0}
+.ph h3{margin:0;font-size:13px;font-weight:900;letter-spacing:.06em;background:var(--lime);color:#0B0D11;padding:3px 14px 3px 8px;clip-path:polygon(0 0,100% 0,calc(100% - 10px) 100%,0 100%)}
+.ph small{font-size:11px;color:var(--muted)}
+.pb{padding:10px 12px 12px}
+/* 顶栏 */
+#top{position:absolute;left:16px;right:16px;top:12px;display:flex;align-items:center;gap:16px;z-index:5;pointer-events:none}
+#top .logo{font-family:var(--num);font-weight:700;font-size:30px;letter-spacing:.04em;line-height:1;white-space:nowrap}
+#top .logo b{color:var(--lime)}
+#top .sub{font-size:11px;color:var(--muted);line-height:1.4;letter-spacing:.12em}
+#top .modes{display:flex;gap:4px;pointer-events:auto}
+#top .views{margin-left:auto;margin-right:14px}
+.views button.on{background:var(--cyan);border-color:var(--cyan)}
+.modes button{font-family:var(--font);font-size:13px;font-weight:700;padding:7px 16px;border:1px solid var(--line);background:rgba(16,19,24,.85);color:var(--muted);cursor:pointer;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%)}
+.modes button.on{background:var(--lime);color:#0B0D11;border-color:var(--lime)}
+.modes button{white-space:nowrap}
+@media (min-width:1000px) and (max-width:1380px){#top .modes button{padding:6px 10px;font-size:12px}#top .sub{display:none}#top .logo{font-size:24px}#top .views{margin-right:6px}#top .sim{display:none}}
+.modes button:focus-visible{outline:2px solid var(--lime)}
+#top .sim{font-size:11px;color:var(--amber);border:1px dashed rgba(242,184,75,.6);padding:2px 8px;white-space:nowrap}
+/* KPI */
+#kpis{position:absolute;top:62px;left:326px;right:326px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;z-index:4;pointer-events:none}
+.kpi{padding:10px 14px 10px}
+.kpi .k{font-size:11px;letter-spacing:.1em;color:var(--muted)}
+.kpi .v{font-family:var(--num);font-size:28px;font-weight:700;line-height:1.05;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:13px;color:var(--muted);margin-left:4px;font-family:var(--font)}
+.kpi .v.lime{color:var(--lime)} .kpi .v.amber{color:var(--amber)}
+/* 侧栏 */
+#left{position:absolute;left:16px;top:62px;width:290px;z-index:4;display:flex;flex-direction:column;gap:10px}
+#right{position:absolute;right:16px;top:62px;width:290px;z-index:4;display:flex;flex-direction:column;gap:10px}
+.mix .row,.bars .row{display:grid;grid-template-columns:86px 1fr 46px;gap:8px;align-items:center;font-size:12px;margin:8px 0;color:var(--muted)}
+.track{height:8px;background:#1d222a;overflow:hidden}
+.track i{display:block;height:100%;background:var(--lime);transition:width .8s}
+.mix b,.bars b{font-family:var(--num);font-size:16px;color:var(--ink);text-align:right}
+.modesrc{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5}
+.shift{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;margin-top:4px}
+.shift div{border:1px solid var(--line);padding:7px 8px;font-size:12px;line-height:1.45;background:#12161b}
+.shift div b{display:block;font-size:13px;color:var(--ink)}
+.shift .to{border-color:rgba(198,244,50,.55)}
+.shift .to b{color:var(--lime)}
+.shift .arr{color:var(--lime);font-size:18px}
+.note{font-size:12.5px;line-height:1.65;color:var(--ink)}
+#ticker{font-size:12.5px;line-height:1.55;min-height:40px}
+#ticker b{display:inline-block;background:rgba(242,184,75,.16);color:var(--amber);padding:1px 6px;margin-right:6px;font-size:12px}
+body[data-mode=before] #ticker b{background:rgba(255,107,74,.15);color:var(--red)}
+/* 故事面板 */
+#story{position:absolute;left:50%;transform:translateX(-50%);bottom:14px;width:min(720px,calc(100vw - 660px));min-width:520px;z-index:6}
+#story .pb{padding:12px 16px 14px}
+.sbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+#steps{display:flex;gap:4px}
+#steps button,.nav button{font-family:var(--num);font-size:15px;font-weight:700;min-width:32px;height:30px;border:1px solid var(--line);background:#12161b;color:var(--muted);cursor:pointer}
+#steps button.on{background:var(--lime);color:#0B0D11;border-color:var(--lime)}
+.nav{margin-left:auto;display:flex;gap:6px}
+.nav button{font-family:var(--font);font-size:13px;padding:0 12px}
+.nav button#next{background:var(--lime);color:#0B0D11;border-color:var(--lime)}
+.nav button:disabled{opacity:.4;cursor:default}
+#s-no{font-size:11px;color:var(--muted);letter-spacing:.1em;margin-top:10px}
+#s-title{font-size:21px;font-weight:900;margin:2px 0 10px}
+.ba{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ba div{padding:9px 11px;font-size:13px;line-height:1.65;background:#12161b;border-left:3px solid #4b5563}
+.ba div.af{border-left-color:var(--lime);background:rgba(198,244,50,.06)}
+.ba em{display:block;font-style:normal;font-size:11px;letter-spacing:.1em;color:var(--muted);margin-bottom:2px}
+.ba div.af em{color:var(--lime)}
+.meta{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--muted)}
+#s-agents span{display:inline-block;margin:0 4px 2px 0;padding:2px 8px;border:1px solid rgba(242,184,75,.6);color:#F7D697;font-size:12px}
+#s-ev{color:var(--lime)}
+/* 标签 */
+#tags{position:absolute;inset:0;pointer-events:none;z-index:3}
+.tag{position:absolute;left:0;top:0;white-space:nowrap;font-size:12px;padding:4px 9px 4px 20px;background:rgba(14,17,21,.88);border:1px solid #303743;margin:-14px 0 0 -10px;transition:opacity .3s,border-color .3s}
+.tag i{position:absolute;left:7px;top:9px;width:8px;height:8px;border-radius:50%;background:var(--lime);box-shadow:0 0 8px var(--lime)}
+.tag b{display:block;font-size:12.5px;letter-spacing:.04em}
+.tag span{display:block;font-size:10.5px;color:var(--muted)}
+.tag.big b{font-size:14px}
+.tag.hubtag{border-color:rgba(242,184,75,.7)} .tag.hubtag i{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+.tag.hl{border-color:var(--lime);background:rgba(28,36,12,.92)}
+.tag .alert{display:none;font-style:normal;font-size:10.5px;color:var(--red)}
+body[data-mode=before] .tag.dept .alert{display:block}
+body[data-mode=before] .tag.dept span{display:none}
+body[data-mode=before] .tag.dept i{background:var(--red);box-shadow:0 0 8px var(--red)}
+body[data-mode=before] .tag.hubtag{opacity:.35}
+#modeNote{font-size:12.5px;line-height:1.6}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+footer{display:none}
+body:not([data-view=campus]) .v-campus{display:none!important}
+body:not([data-view=org]) .v-org{display:none!important}
+body:not([data-view=ideal]) .v-ideal{display:none!important}
+body[data-view=campus] .v-orgs{display:none!important}
+body[data-view=ideal] #top .modes:not(.views){visibility:hidden}
+body[data-view=org] .v-orgplain{display:block!important}
+#cockpit{display:none}
+body[data-view=cockpit] #cockpit{display:block;position:absolute;left:0;right:0;top:56px;bottom:0;overflow:auto;z-index:8;background:rgba(9,11,15,.9);backdrop-filter:blur(3px);padding:6px 16px 16px}
+body[data-view=cockpit] #story,body[data-view=cockpit] #left,body[data-view=cockpit] #right,body[data-view=cockpit] #kpis,body[data-view=cockpit] #tags,body[data-view=cockpit] #foot{display:none!important}
+body[data-view=cockpit] #top .modes:not(.views){visibility:hidden}
+.ck-head{display:flex;gap:16px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
+.ck-title{font-size:22px;font-weight:900}
+.ck-sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+.ck-kpis{display:grid;grid-template-columns:repeat(6,minmax(96px,1fr));gap:8px}
+.ck-kpis .p{padding:8px 12px}
+.ck-kpis span{display:block;font-size:11px;color:var(--muted)}
+.ck-kpis b{font-family:var(--num);font-size:26px;line-height:1.1}
+.ck-kpis b small{font-size:12px;color:var(--muted);margin-left:2px;font-family:var(--font)}
+.ck-kpis .hot b{color:var(--amber)}
+.ck-grid{display:grid;grid-template-columns:1.25fr 1fr;grid-template-areas:"a b" "f b" "c d" "e e";gap:10px}
+@media (min-width:1300px){.ck-grid{grid-template-columns:1.1fr .95fr 1fr;grid-template-areas:"a a b" "f f b" "c d e"}}
+.ck-a{grid-area:a}.ck-b{grid-area:b}.ck-c{grid-area:c}.ck-d{grid-area:d}.ck-e{grid-area:e}.ck-f{grid-area:f}
+.charts{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.ch{background:#12161b;border:1px solid var(--line);padding:9px 10px 6px}
+.cht{font-size:12px;color:var(--muted);margin-bottom:4px}
+.ch svg{display:block;overflow:visible}
+.ch .grid{stroke:#232a33;stroke-width:1}
+.ch .ax{fill:#7d8794;font-size:10px;font-family:var(--font)}
+.ch .ax.lime{fill:var(--lime)}
+.ch .val{fill:var(--ink);font-size:11px;font-weight:700;font-family:var(--num)}
+.ch .bar{fill:#36C5F0;opacity:.55;transition:y .7s cubic-bezier(.2,.8,.2,1),height .7s cubic-bezier(.2,.8,.2,1)}
+.ch .bar.hl{opacity:1}
+.ch .line{fill:none;stroke:var(--lime);stroke-width:2;stroke-linejoin:round}
+.ch .line.thin{stroke-width:1.6;stroke:#36C5F0}
+.ch .area{fill:rgba(198,244,50,.09)}
+.ch .dot{fill:var(--lime);stroke:#12161b;stroke-width:2}
+.ch .dot.pulse{animation:pulse 1.6s infinite}
+.ch .mark{stroke:#6b7280;stroke-dasharray:3 3;stroke-width:1}
+.ch .cross{stroke:#8B95A3;stroke-width:1}
+@keyframes pulse{0%,100%{r:4.5;opacity:1}50%{r:7;opacity:.6}}
+.pr{display:grid;grid-template-columns:62px 1fr 40px;gap:6px;align-items:center;font-size:12px;padding:2px 0;cursor:default}
+.pr .pn{color:var(--muted)}
+.pr .pv{font-family:var(--num);font-size:15px;text-align:right}
+.pr .pf{grid-column:2/4;font-style:normal;font-size:10.5px;color:var(--amber);margin-top:-3px}
+.pr .pf:empty{display:none}
+.rr{display:grid;grid-template-columns:72px 1fr 38px;gap:6px;align-items:center;font-size:12px;padding:3px 0}
+.rr .rn2{color:var(--muted)}
+.rr .rt{position:relative;height:9px;background:#1d222a;border-radius:2px}
+.rr .rt i{position:absolute;left:0;top:0;bottom:0;background:#36C5F0;border-radius:0 3px 3px 0;transition:width .9s cubic-bezier(.2,.8,.2,1)}
+.rr .rt u{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);text-decoration:none}
+.rr b{font-family:var(--num);font-size:14px;text-align:right}
+.rr em{grid-column:2/4;font-style:normal;font-size:10.5px;color:var(--amber);margin-top:-3px}
+.rr em:empty{display:none}
+.mixb{display:flex;gap:2px;height:22px;margin:10px 0 10px}
+.mixb i{display:block;border-radius:3px;cursor:default;animation:grow 1s ease}
+@keyframes grow{from{transform:scaleX(0);transform-origin:left}to{transform:scaleX(1);transform-origin:left}}
+.s1{background:#3987e5}.s2{background:#d95926}.s3{background:#199e70}
+.mixl{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
+.mixl span i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.mixl b{color:var(--ink);font-family:var(--num);font-size:14px;margin-left:4px}
+.live{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--lime);margin-right:6px;animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.25}}
+.tile.bad i,.tile.warn i{animation:blink 1.6s infinite}
+.cktip{position:fixed;z-index:50;display:none;pointer-events:none;background:#0d1015;border:1px solid #3a4250;padding:7px 10px;font-size:12px;line-height:1.55;color:var(--ink);max-width:220px}
+.cktip b{display:block;color:var(--lime);font-size:12.5px}
+#fs{pointer-events:auto;font-family:var(--font);font-size:12.5px;font-weight:700;padding:6px 12px;border:1px solid var(--lime);background:rgba(16,19,24,.85);color:var(--lime);cursor:pointer;white-space:nowrap}
+#fs:hover{background:rgba(198,244,50,.12)}
+body[data-view=cockpit] #fs{display:none}
+/* 全屏：只留画面和一条精简的步骤栏 */
+body.immersive #left,body.immersive #right,body.immersive #kpis,body.immersive #foot,body.immersive #top .modes,body.immersive #top .sub,body.immersive #top .sim{display:none!important}
+body.immersive #story{width:auto;min-width:0;left:50%;transform:translateX(-50%);bottom:12px;max-width:min(760px,calc(100vw - 24px))}
+body.immersive #story .ba,body.immersive #story .meta,body.immersive #s-no{display:none}
+body.immersive #story #s-title{font-size:16px;margin:8px 0 0}
+body.immersive #top{left:12px;right:12px}
+body.immersive #fs{margin-left:auto}
+#ck-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:7px}
+.tile{position:relative;padding:8px 10px 8px 14px;background:#12161b;border:1px solid var(--line)}
+.tile i{position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--ok,#3DD68C)}
+.tile.ok i{background:#3DD68C}.tile.warn i{background:var(--amber)}.tile.bad i{background:var(--red)}.tile.run i{background:var(--cyan)}
+.tile.bad{border-color:rgba(255,107,74,.45)}.tile.run{border-color:rgba(54,197,240,.5)}
+.tile b{display:block;font-size:13px}
+.tile em{display:block;font-style:normal;font-size:12px;color:var(--ink);margin-top:2px}
+.tile span{display:block;font-size:11px;color:var(--muted);margin-top:1px}
+#ck-issues{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+#ck-issues li{padding:8px 10px;background:#12161b;border-left:3px solid var(--amber)}
+#ck-issues li.bad{border-left-color:var(--red)}
+#ck-issues b{display:block;font-size:13px}
+#ck-issues span{font-size:11.5px;color:var(--cyan)}
+#ck-issues em{display:block;font-style:normal;font-size:12px;color:var(--muted);margin-top:2px}
+.dec{padding:10px 12px;background:#12161b;border:1px solid var(--line);margin-bottom:8px}
+.dec.done{opacity:.7}
+.dec .dt{font-size:14px;font-weight:700}
+.dec .dai{font-size:12.5px;margin-top:5px;line-height:1.55}
+.dec .dai b{display:inline-block;font-size:11px;background:rgba(242,184,75,.16);color:var(--amber);padding:0 6px;margin-right:6px}
+.dec ul{margin:5px 0 0;padding-left:16px;font-size:12px;color:var(--muted);line-height:1.6}
+.dec .dimp{font-size:12px;color:var(--lime);margin-top:4px}
+.dbtn{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center}
+.dbtn button,#ck-stage button,#ck-asks button{font-family:var(--font);font-size:12.5px;padding:5px 11px;border:1px solid var(--line);background:#1a1f26;color:var(--ink);cursor:pointer}
+.dbtn button.go{background:var(--lime);color:#0B0D11;border-color:var(--lime);font-weight:700}
+.dbtn .ok{font-size:12px;color:var(--cyan);margin-right:4px}
+#ck-stage{display:flex;gap:6px;flex-wrap:wrap}
+#ck-stage button.on{background:var(--cyan);color:#0B0D11;border-color:var(--cyan);font-weight:700}
+#ck-stage-d{font-size:12.5px;line-height:1.6;margin:8px 0 10px}
+#ck-stage-d span{color:var(--muted);font-size:12px}
+#ck-route-t{font-size:12px;color:var(--muted);margin-bottom:6px}
+#ck-route{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-height:64px}
+.rn{display:flex;flex-direction:column;gap:4px;opacity:.2;transition:opacity .4s,transform .4s;transform:translateY(4px)}
+.rn.on{opacity:1;transform:none}
+.rn span,.ck-legend span{font-size:12px;padding:5px 8px;border:1px solid;white-space:nowrap}
+.rn .h,.ck-legend .h{border-color:#A9E4F7;color:#A9E4F7;background:rgba(169,228,247,.08)}
+.rn .a,.ck-legend .a{border-color:var(--amber);color:#F7D697;background:rgba(242,184,75,.1)}
+.rn .c,.ck-legend .c{border-color:var(--lime);color:var(--lime);background:rgba(198,244,50,.08)}
+.rn .duty,.ck-legend .duty{border-color:#3DD68C;color:#9BF0C4;background:rgba(61,214,140,.08)}
+.rn .s,.ck-legend .s{border-color:#6b7280;color:#c3c9d2}
+.rn .tool{border-style:dashed;border-color:#6b7280;color:var(--muted);font-size:11px}
+.ra{color:var(--muted)}
+.ck-legend{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.ck-legend span{font-size:11px;padding:2px 6px}
+#ck-log{list-style:none;margin:10px 0 0;padding:0;font-size:12px;line-height:1.7;color:var(--ink)}
+#ck-log b{font-family:var(--num);color:var(--cyan);margin-right:6px}
+#ck-log .muted{color:var(--muted)}
+#ck-asks{display:flex;gap:6px;flex-wrap:wrap}
+#ck-ans{margin-top:10px;font-size:13px;line-height:1.65;padding:9px 11px;background:#12161b;border-left:3px solid var(--lime);min-height:44px}
+#ck-ans b{display:block;color:var(--lime);font-size:12.5px;margin-bottom:2px}
+.ck-foot{font-size:11px;color:#6b7480;margin-top:10px}
+@media (max-width:999px){
+  body[data-view=cockpit] #cockpit{position:static;background:var(--bg);padding:10px}
+  .ck-kpis{grid-template-columns:repeat(3,1fr);width:100%}
+  .ck-grid{grid-template-columns:1fr;grid-template-areas:"a" "b" "f" "d" "c" "e"}
+}
+.tag.dom i{background:#3DD68C;box-shadow:0 0 8px #3DD68C}
+.tag.dom{border-color:rgba(61,214,140,.6)}
+.tag.dom b{color:#9BF0C4}
+.tag.dim{opacity:.72}
+.tag.dim span{display:none}
+@media (max-width:999px){body[data-view=ideal] .tag.dim:not(.hubtag){display:none!important}}
+.tag.gate i{background:var(--cyan);box-shadow:0 0 8px var(--cyan);border-radius:1px}
+.stages3{display:flex;flex-direction:column;gap:6px}
+.stages3 div{padding:7px 10px;background:#12161b;border-left:3px solid #4b5563;font-size:12.5px;line-height:1.5}
+.stages3 div b{display:block;font-size:13px}
+.stages3 div.mid{border-left-color:var(--cyan)}
+.stages3 div.end{border-left-color:var(--lime);background:rgba(198,244,50,.06)}
+.stages3 div.end b{color:var(--lime)}
+.lv div{border-left:3px solid var(--lime);padding:5px 0 5px 10px;margin-bottom:7px;background:#12161b}
+.lv div b{display:block;font-size:13px}
+.lv div span{display:block;font-size:12px;color:var(--muted);line-height:1.5}
+.lv .modesrc{border:0;background:none;padding:0}
+.tag.layer{border-color:rgba(54,197,240,.7);background:rgba(10,24,34,.92)}
+.tag.layer i{background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+.tag.layer b{font-size:14px}
+.tag.mini{padding:2px 7px 2px 16px;margin:-10px 0 0 -8px}
+.tag.mini b{font-size:11px;font-weight:500}
+.tag.mini span{display:none}
+.tag.mini i{left:5px;top:6px;width:6px;height:6px;background:var(--amber);box-shadow:0 0 6px var(--amber);border-radius:1px;transform:rotate(45deg)}
+.tag.sys i{background:var(--cyan);box-shadow:none;border-radius:1px;transform:none}
+.tag.human i{background:#A9E4F7;box-shadow:0 0 8px #A9E4F7}
+body[data-mode=before] .tag.mini:not(.sys),body[data-mode=before] .tag.hubtag{opacity:.15}
+#foot{position:absolute;left:16px;bottom:10px;font-size:10.5px;color:#6b7480;z-index:4;max-width:300px;line-height:1.5}
+/* 中屏 */
+@media (max-width:1380px){#left,#right{width:250px}#kpis{left:280px;right:280px}#story{width:calc(100vw - 580px);min-width:480px}}
+/* 手机/窄屏：上方3D，下方滚动 */
+@media (max-width:999px){
+  html,body{overflow:auto;height:auto}
+  #app{height:auto}
+  #stage{position:sticky;top:0;height:56vh;z-index:1}
+  #top{left:10px;right:10px;top:8px;flex-wrap:wrap;gap:6px}
+  #top .logo{font-size:22px}
+  #top .sub{display:none}
+  #top .modes{margin-left:0;order:3;width:100%}
+  .modes button{flex:1;padding:6px 4px;font-size:12px}
+  #top .views{margin:0;order:3;width:100%}
+  .tag.mini{display:none!important}
+  #top .sim{position:absolute;right:0;top:4px;font-size:10px}
+  #kpis{position:absolute;top:auto;bottom:8px;left:8px;right:8px;gap:6px}
+  .kpi{padding:5px 8px}.kpi .v{font-size:20px}.kpi .k{font-size:10px;letter-spacing:0}
+  .kpi .v small{display:none}
+  #story,#left,#right{position:static;transform:none;width:auto;min-width:0;margin:10px}
+  #below{position:relative;z-index:2;background:var(--bg);padding-bottom:20px}
+  .tag{font-size:10px;padding:2px 6px 2px 15px}.tag b{font-size:11px}.tag span{display:none}.tag i{left:5px;top:6px;width:6px;height:6px}
+  .tag.big b{font-size:11.5px}
+  .ba{grid-template-columns:1fr}
+  #s-title{font-size:18px}
+  #foot{position:static;margin:10px;max-width:none}
+  #fs{order:4;margin-left:auto;font-size:11px;padding:4px 8px}
+  body.immersive #stage{position:fixed;inset:0;height:100vh;z-index:20}
+  body.immersive #below > :not(#story){display:none!important}
+  body.immersive #story{position:fixed;left:8px;right:8px;bottom:8px;transform:none;margin:0;z-index:25}
+  body.immersive #fs{position:absolute;right:0;top:0}
+}
+@media (min-width:1000px){#below{display:contents}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body data-mode="after" data-view="campus">
+<div id="app">
+  <section id="stage" aria-label="AI 运转全景三维场景，可拖动旋转、滚轮缩放">
+    <div id="tags"></div>
+    <div id="top">
+      <div><div class="logo" id="logo"></div><div class="sub" id="logo-sub">AI OPERATIONS DIGITAL TWIN</div></div>
+      <div class="modes views" role="group" aria-label="看什么">
+        <button type="button" data-view="campus" class="on">园区全景</button>
+        <button type="button" data-view="org">组织 · 过渡态</button>
+        <button type="button" data-view="ideal">组织 · 理想态</button>
+        <button type="button" data-view="cockpit">老板驾驶舱</button>
+      </div>
+      <div class="modes" role="group" aria-label="时期">
+        <button type="button" data-mode="before">今天</button>
+        <button type="button" data-mode="after" class="on">AI 之后</button>
+        <button type="button" data-mode="xray">AI 透视</button>
+      </div>
+      <button type="button" id="fs">⤢ 全屏看画面</button>
+      <span class="sim">概念示意 · 运行数字为模拟</span>
+    </div>
+    <div id="kpis">
+      <div class="p kpi"><div class="k" id="kl-1">AI 今日完成任务</div><div class="v lime" id="k-ai">0</div></div>
+      <div class="p kpi"><div class="k" id="kl-2">待人确认</div><div class="v amber" id="k-pend">0</div></div>
+      <div class="p kpi"><div class="k" id="kl-3">综合 PUE</div><div class="v" id="k-pue">1.31</div></div>
+      <div class="p kpi"><div class="k" id="kl-4">经营数据</div><div class="v" id="k-sla" style="font-family:var(--font);font-size:24px">实时</div></div>
+    </div>
+  </section>
+  <div id="below">
+    <div id="cockpit">
+      <div class="ck-head">
+        <div><div class="ck-title" id="ck-title"></div><div class="ck-sub" id="ck-sub"></div></div>
+        <div class="ck-kpis" id="ck-kpis"></div>
+      </div>
+      <div class="ck-grid">
+        <div class="p ck-a"><div class="ph"><h3>全公司状态</h3><small>绿＝正常 · 黄＝关注 · 红＝有问题 · 蓝＝执行中</small></div><div class="pb"><div id="ck-tiles"></div></div></div>
+        <div class="p ck-f"><div class="ph"><h3>经营图表</h3><small><span class="live"></span>实时 · 悬停看数值</small></div>
+          <div class="pb charts">
+            <div class="ch"><div class="cht" id="cvt-rev"></div><div id="cv-rev"></div></div>
+            <div class="ch"><div class="cht">Agent 完成任务占比（近 24 周）</div><div id="cv-agent"></div></div>
+            <div class="ch"><div class="cht" id="cvt-pue"></div><div id="cv-pue"></div></div>
+            <div class="ch"><div class="cht" id="cvt-rack"></div><div id="cv-rack"></div></div>
+            <div class="ch"><div class="cht" id="cvt-mix"></div><div id="cv-mix"></div></div>
+          </div>
+        </div>
+        <div class="p ck-b"><div class="ph"><h3>待决策</h3><small>AI 已备好建议和依据</small></div><div class="pb" id="ck-decs"></div></div>
+        <div class="p ck-c"><div class="ph"><h3>AI 发现的问题</h3><small>按影响排序</small></div><div class="pb"><ul id="ck-issues"></ul></div></div>
+        <div class="p ck-d"><div class="ph"><h3>派发路径</h3><small>随 AI 阶段升级</small></div>
+          <div class="pb">
+            <div id="ck-stage"><button type="button" data-st="1" class="on">阶段一 · 起步</button><button type="button" data-st="2">阶段二 · 过渡</button><button type="button" data-st="3">阶段三 · 理想</button></div>
+            <div id="ck-stage-d"></div>
+            <div id="ck-route-t"></div>
+            <div id="ck-route"></div>
+            <div class="ck-legend"><span class="h">人</span><span class="a">Agent</span><span class="c">总控 / 任务池</span><span class="duty">职责节点</span><span class="s">系统</span></div>
+            <ul id="ck-log"></ul>
+          </div>
+        </div>
+        <div class="p ck-e"><div class="ph"><h3>问一句</h3><small>答案带出处</small></div><div class="pb"><div id="ck-asks"></div><div id="ck-ans">点上面的问题试试。</div></div></div>
+      </div>
+      <div class="ck-foot" id="ck-foot"></div>
+    </div>
+    <div id="story" class="p">
+      <div class="pb">
+        <div class="sbar"><div id="steps"></div><div class="nav"><button type="button" id="play">▶ 自动讲解</button><button type="button" id="prev">上一步</button><button type="button" id="next">下一步</button></div></div>
+        <div id="s-no"></div>
+        <div id="s-title"></div>
+        <div class="ba"><div><em id="h-a">今天</em><span id="s-before"></span></div><div class="af"><em id="h-b">AI 之后</em><span id="s-after"></span></div></div>
+        <div class="meta"><span>数字员工 <span id="s-agents"></span></span><span>留下的证据：<span id="s-ev"></span></span></div>
+      </div>
+    </div>
+    <div id="left">
+      <div class="p v-ideal"><div class="ph"><h3>组织怎么演进</h3></div>
+        <div class="pb stages3">
+          <div><b>今天 · 部门制</b>人按部门干活，信息层层上报</div>
+          <div class="mid"><b>过渡态 · 部门 + 助理 Agent</b>部门还在，每个部门配 Agent</div>
+          <div class="end"><b>理想态 · 任务驱动</b>没有部门：任务池 + 目标小队干活，责任挂在职责节点上</div>
+        </div>
+      </div>
+      <div class="p v-ideal"><div class="ph"><h3>人只做四件事</h3></div>
+        <div class="pb lv">
+          <div><b>定目标</b><span>老板和 Owner：要什么结果、边界在哪</span></div>
+          <div><b>担责任</b><span>每个结果都落到一个具体的人</span></div>
+          <div><b>做判断</b><span>新情况、例外、和客户打交道</span></div>
+          <div><b>到现场</b><span>现场持证动手的事</span></div>
+        </div>
+      </div>
+      <div class="p v-org"><div class="ph"><h3>Agent 权限三级</h3></div>
+        <div class="pb lv">
+          <div><b>1 · 只读查询</b><span>知识问答、经营问数</span></div>
+          <div><b>2 · 起草建议</b><span id="perm-2">报价审核、诊断建议，人确认后生效</span></div>
+          <div><b>3 · 受控执行</b><span>派工单、发周报，有人审、有日志、能回退</span></div>
+          <div class="modesrc" id="perm-note">核心设施永远停在第 2 级。</div>
+        </div>
+      </div>
+      <div class="p v-org"><div class="ph"><h3>人的新岗位</h3></div>
+        <div class="pb lv">
+          <div><b>AI 负责人</b><span>统筹各部门 Agent 的进度、预算和关口</span></div>
+          <div><b>Agent 运营（训练师）</b><span>维护知识库、规则和评测集，让 Agent 越用越准</span></div>
+          <div><b>数据管理员</b><span>守住口径和权限</span></div>
+        </div>
+      </div>
+      <div class="p v-campus"><div class="ph"><h3 id="p-money-t"></h3><small id="p-money-src"></small></div>
+        <div class="pb mix" id="p-money-rows"></div>
+      </div>
+      <div class="p v-campus"><div class="ph"><h3 id="p-shift-t"></h3></div>
+        <div class="pb" id="p-shift"></div>
+      </div>
+      <div class="p"><div class="ph"><h3>当前视图</h3></div><div class="pb"><div id="modeNote"></div>
+        <div class="legend"><span><i style="background:var(--cyan)"></i>数据汇入</span><span><i style="background:var(--amber)"></i>AI 建议下发</span><span><i style="background:#fff;box-shadow:0 0 6px var(--lime)"></i><em class="v-campus" style="font-style:normal" id="leg-token">客户订单</em><em class="v-orgs" style="font-style:normal">任务流转</em></span><span class="v-orgs"><i style="background:#A9E4F7"></i>人</span><span class="v-orgs"><i style="background:var(--amber);border-radius:2px;transform:rotate(45deg)"></i>Agent</span></div></div></div>
+    </div>
+    <div id="right">
+      <div class="p v-ideal"><div class="ph"><h3>任务颜色</h3></div>
+        <div class="pb lv">
+          <div style="border-left-color:var(--amber)"><b>金色 · Agent 完成</b><span>规则清楚、能回退的任务，包括从能力池临时调来的 Agent</span></div>
+          <div style="border-left-color:#A9E4F7"><b>浅蓝 · 人完成</b><span>要判断、要担责、要到现场的任务</span></div>
+          <div style="border-left-color:#FF8A4A"><b>橙色 · 转人工</b><span>Agent 先做，拿不准的直接找对应的职责节点</span></div>
+          <div class="modesrc">每个任务做完，都回流到“知识”底座。</div>
+        </div>
+      </div>
+      <div class="p v-campus v-orgplain"><div class="ph"><h3>各部门数字员工</h3><small>今日任务数</small></div><div class="pb bars" id="dept-bars"></div></div>
+      <div class="p"><div class="ph"><h3>实时动态</h3></div><div class="pb"><div id="ticker"></div></div></div>
+    </div>
+    <div id="foot"></div>
+  </div>
+</div>
+<script>/*BUNDLE*/</script>
+</body>
+</html>

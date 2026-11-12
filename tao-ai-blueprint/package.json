@@ -1,0 +1,9 @@
+{
+  "name": "tao-ai-blueprint",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "为一家公司生成 3D AI 运转全景、AI 全貌蓝图和讲解稿",
+  "scripts": { "build": "node tools/build.mjs" },
+  "dependencies": { "three": "0.169.0", "esbuild": "0.24.0" }
+}

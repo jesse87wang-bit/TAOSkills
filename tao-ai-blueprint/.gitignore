@@ -1,0 +1,9 @@
+node_modules/
+out*/
+qa*/
+snap*/
+research/
+configs/*
+!configs/example-*.js
+engine/_*
+tools/_*
