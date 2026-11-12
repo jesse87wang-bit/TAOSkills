@@ -1,6 +1,6 @@
 # 配置字段说明
 
-一份 `configs/<公司>.js`：`export default { ... }`。完整写法看 `configs/example-qinghe.js`，下面说明每个字段的意思和硬性数量。数量是按“效果不能比第一家差”定的，`tools/lint.mjs` 会检查。
+一份 `configs/<公司>.js`：`export default { ... }`。完整写法看 `configs/example-tingtao.js`，下面说明每个字段的意思和硬性数量。数量是按“效果不能比第一家差”定的，`tools/lint.mjs` 会检查。
 
 ## 顶层
 

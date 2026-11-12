@@ -1,4 +1,4 @@
-# tao-company-atlas 工具包 v1.0.1
+# tao-company-atlas 工具包 v1.0.2
 
 给一家公司生成两张可离线打开的网页：
 
@@ -29,7 +29,7 @@ engine/engine3d.js          3D 引擎：export function run(CFG)
 engine/template3d.html      3D 页模板（样式、面板骨架）
 engine/blueprint.js         蓝图渲染：export function render(CFG)
 engine/template-blueprint.html
-configs/example-qinghe.js   虚构示例（连锁便利店）——写新公司时照它的字段写
+configs/example-tingtao.js   虚构示例（连锁便利店）——写新公司时照它的字段写
 tools/build.mjs lint.mjs qa.py qa_bp.py snap.py publish_github.sh
 CONFIG.md                   配置字段说明（写配置前必读）
 NARRATION.md                两份讲解稿的写法和骨架
