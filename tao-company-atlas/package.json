@@ -1,6 +1,6 @@
 {
   "name": "tao-company-atlas",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
   "type": "module",
   "description": "为一家公司生成 3D AI 运转全景、AI 全貌蓝图和讲解稿",

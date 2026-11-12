@@ -3,7 +3,7 @@ name: tao-company-atlas
 description: 给一家公司做「AI 全貌」：3D AI 运转全景（含 AI 原生组织过渡态/理想态和老板驾驶舱）+ AI 全貌蓝图，各配一份讲解稿。说给某公司做 AI 全貌、3D 运转全景、AI 蓝图、老板驾驶舱时用。
 ---
 
-# tao-company-atlas｜一家公司 → 3D AI 运转全景 + AI 全貌蓝图 + 两份讲解稿（工具包 v1.0.2）
+# tao-company-atlas｜一家公司 → 3D AI 运转全景 + AI 全貌蓝图 + 两份讲解稿（工具包 v1.0.3）
 
 用户每给一家新公司（公司名，加上他手上的资料），就交付四样东西：
 
@@ -83,4 +83,4 @@ python3 tools/snap.py out/<简称>AI运转全景.html snap    # 24 步逐张截�
 - 给客户看的页面和讲解稿里不出现内部讨论（skill、配置、“我们怎么做的”）。
 - 引擎改了：更新 `manifest.json` 版本号、`CHANGELOG.md`、本文件标题版本；用示例和至少一份旧配置跑 QA 确认没退化。
 - **用户 2026-11-12 定：工具包有任何改动，都自动推送到 GitHub `jesse87wang-bit/TAOSkills` 的 `tao-company-atlas/`（main），不用再问。** 推送：`add_repo`（push）→ 克隆 → `bash tools/publish_github.sh <工具包> <仓库> "<说明>"`；推完在回复里说一句推了哪个版本。工具包里的 SKILL.md 改了，同时发技能更新卡片给用户保存。
-- 推送前再查一遍：仓库里不能出现任何客户公司名、老板名（包括代码注释）。
+- 推送前把所有做过的客户公司名、老板称呼写进 `~/.atlas_denylist`（一行一个；容器每次是新的，每次都要写），`publish_github.sh` 只按白名单拷文件，并用这份名单查一遍，出现客户名就停止。
