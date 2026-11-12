@@ -1,4 +1,4 @@
-// AI 全貌蓝图：9 个板块，全部从配置 CFG.blueprint 渲染。尚航配置是效果基准。
+// AI 全貌蓝图：9 个板块，全部从配置 CFG.blueprint 渲染。
 export function render(CFG) {
   const B = CFG.blueprint, $ = s => document.querySelector(s);
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
