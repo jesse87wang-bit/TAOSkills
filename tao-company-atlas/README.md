@@ -1,4 +1,4 @@
-# tao-ai-blueprint 工具包 v1.0.0
+# tao-company-atlas 工具包 v1.0.1
 
 给一家公司生成两张可离线打开的网页：
 

@@ -59,19 +59,19 @@ https://github.com/jesse87wang-bit/TAOSkills/tree/main/tao-training-demo
 请完整加载整个目录。安装后用「用 tao-training-demo 做一个 XX 助手」调用。
 ```
 
-### tao-ai-blueprint
+### tao-company-atlas
 
 **企业 AI 全貌**。输入一家公司（加上手头资料），自动研究后生成：3D AI 运转全景（园区全景、AI 原生组织过渡态/理想态、老板驾驶舱）+ AI 全貌蓝图（9 个板块），各配一份讲解稿。两张页都是可离线双击打开的单文件网页。
 
-- 安装：[`tao-ai-blueprint/INSTALL.md`](tao-ai-blueprint/INSTALL.md)
-- Skill：[`tao-ai-blueprint/SKILL.md`](tao-ai-blueprint/SKILL.md)
-- 说明：[`tao-ai-blueprint/README.md`](tao-ai-blueprint/README.md)
-- 配置字段：[`tao-ai-blueprint/CONFIG.md`](tao-ai-blueprint/CONFIG.md)
-- Changelog：[`tao-ai-blueprint/CHANGELOG.md`](tao-ai-blueprint/CHANGELOG.md)
+- 安装：[`tao-company-atlas/INSTALL.md`](tao-company-atlas/INSTALL.md)
+- Skill：[`tao-company-atlas/SKILL.md`](tao-company-atlas/SKILL.md)
+- 说明：[`tao-company-atlas/README.md`](tao-company-atlas/README.md)
+- 配置字段：[`tao-company-atlas/CONFIG.md`](tao-company-atlas/CONFIG.md)
+- Changelog：[`tao-company-atlas/CHANGELOG.md`](tao-company-atlas/CHANGELOG.md)
 
 ```text
-请从 GitHub 安装并启用 tao-ai-blueprint：
-https://github.com/jesse87wang-bit/TAOSkills/tree/main/tao-ai-blueprint
+请从 GitHub 安装并启用 tao-company-atlas：
+https://github.com/jesse87wang-bit/TAOSkills/tree/main/tao-company-atlas
 
-请完整加载整个目录。安装后用「用 tao-ai-blueprint 给 XX 公司做 AI 全貌」调用。
+请完整加载整个目录。安装后用「用 tao-company-atlas 给 XX 公司做 AI 全貌」调用。
 ```
