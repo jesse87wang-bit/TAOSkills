@@ -6,7 +6,7 @@ const C = (await import(pathToFileURL(resolve(process.argv[2])).href)).default;
 const bad = [], warn = [];
 const need = (cond, msg) => { if (!cond) bad.push(msg); };
 const want = (cond, msg) => { if (!cond) warn.push(msg); };
-const KITS = ['hall', 'office', 'chillers', 'substation', 'solar', 'mast', 'pods', 'warehouse', 'silo', 'store', 'factory', 'pad'];
+const KITS = ['hall', 'office', 'chillers', 'substation', 'solar', 'mast', 'pods', 'warehouse', 'silo', 'store', 'factory', 'pad', 'turbine'];
 
 ['shortName', 'enName', 'brainName', 'bossName', 'footnote'].forEach(k => need(C[k], `缺 ${k}`));
 need(/示意|模拟/.test(C.footnote || ''), 'footnote 要写明哪些是示意');

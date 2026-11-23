@@ -47,7 +47,7 @@ NARRATION.md                两份讲解稿的写法和骨架
 
 ## 积木库（campus.items 的 type）
 
-`hall` 机房/厂房（屋顶风机）· `office` 楼宇 · `chillers` 冷机 · `substation` 变配电 · `solar` 光伏 · `mast` 通信塔 · `pods` 算力舱/集装箱 · `warehouse` 仓库/物流中心 · `silo` 筒仓/储罐 · `store` 门店一排 · `factory` 工厂（锯齿顶+烟囱）· `pad` 广场底座。
+`turbine` 风机（风轮会转，n/gap/h/blade/stagger）· `hall` 机房/厂房（屋顶风机）· `office` 楼宇 · `chillers` 冷机 · `substation` 变配电 · `solar` 光伏 · `mast` 通信塔 · `pods` 算力舱/集装箱 · `warehouse` 仓库/物流中心 · `silo` 筒仓/储罐 · `store` 门店一排 · `factory` 工厂（锯齿顶+烟囱）· `pad` 广场底座。
 
 行业需要新造型（医院、港口吊机、风机、高炉…）就在 `engine3d.js` 的 `KIT` 里加一个函数，只用 `box/cyl/windows/roofKit` 这些现成工具，新增参数都要有默认值，旧配置不受影响。加完跑示例和至少一份旧配置的 QA，确认没退化。
 

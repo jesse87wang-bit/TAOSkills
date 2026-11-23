@@ -3,7 +3,7 @@ name: tao-company-atlas
 description: 给一家公司做「AI 全貌」：3D AI 运转全景（含 AI 原生组织过渡态/理想态和老板驾驶舱）+ AI 全貌蓝图，各配一份讲解稿。说给某公司做 AI 全貌、3D 运转全景、AI 蓝图、老板驾驶舱时用。
 ---
 
-# tao-company-atlas｜一家公司 → 3D AI 运转全景 + AI 全貌蓝图 + 两份讲解稿（工具包 v1.0.3）
+# tao-company-atlas｜一家公司 → 3D AI 运转全景 + AI 全貌蓝图 + 两份讲解稿（工具包 v1.0.4）
 
 用户每给一家新公司（公司名，加上他手上的资料），就交付四样东西：
 

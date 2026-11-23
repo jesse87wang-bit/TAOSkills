@@ -271,6 +271,25 @@ const KIT = {
     KIT.warehouse(g, { ...o, docks: 0, color: o.color ?? 0x666d77 });
     cyl(g, 0.9, (o.h ?? 6) + 9, o.x + (o.w ?? 22) / 2 - 2, 0, o.z - (o.d ?? 12) / 2 + 2, 0x8b939c, { rt: 0.7 });
   },
+  // 风机：塔筒 + 机舱 + 三叶风轮（风轮自转）。n 台，间距 gap，前后错开 stagger
+  turbine(g, o) {
+    const n = o.n ?? 3, gap = o.gap ?? 8, h = o.h ?? 16, L = o.blade ?? 5.5;
+    for (let i = 0; i < n; i++) {
+      const x = o.x + i * gap, z = o.z + (i % 2 ? (o.stagger ?? 4) : 0);
+      cyl(g, 0.45, h, x, 0, z, 0xd8dde3, { rt: 0.25, seg: 14 });
+      box(g, 1.8, 1.0, 1.0, x, h, z, 0xe6e9ee, { noEdge: true });
+      const rotor = new THREE.Group(); rotor.position.set(x, h + 0.5, z + 0.65);
+      const mat = new THREE.MeshStandardMaterial({ color: 0xeef1f4, roughness: 0.5, metalness: 0.2, transparent: true });
+      xrayMats.push({ mat, base: { color: mat.color.clone(), opacity: 1, e: mat.emissive.clone() } });
+      for (let b = 0; b < 3; b++) {
+        const arm = new THREE.Group(); arm.rotation.z = b * Math.PI * 2 / 3 + i * 0.7;
+        const bl = new THREE.Mesh(new THREE.BoxGeometry(0.42, L, 0.14), mat); bl.position.y = L / 2; bl.castShadow = true;
+        arm.add(bl); rotor.add(arm);
+      }
+      const hubM = new THREE.Mesh(new THREE.SphereGeometry(0.42, 12, 10), mat); rotor.add(hubM);
+      rotor.userData.rotor = true; g.add(rotor);
+    }
+  },
   // 平台/广场底座
   pad(g, o) { box(g, o.w ?? 10, 0.4, o.d ?? 10, o.x, 0, o.z, o.color ?? 0x2c3139, { noEdge: true }); },
 };
@@ -814,7 +833,7 @@ function loop() {
   core.rotation.y += dt * 0.6 * sp; core.rotation.x += dt * 0.25 * sp;
   rings.forEach((r, i) => r.rotation.z += dt * (0.3 + i * 0.2) * (i % 2 ? -1 : 1) * sp);
   agents.forEach((a, i) => { a.rotation.y += dt * 1.4 * sp; a.position.y = 6.4 + Math.sin(t * 2 + i) * 0.3 * sp; });
-  scene.traverse(o => { if (o.userData.fan) o.rotation.y += dt * 6 * sp; });
+  scene.traverse(o => { if (o.userData.fan) o.rotation.y += dt * 6 * sp; else if (o.userData.rotor) o.rotation.z -= dt * 1.4 * sp; });
   cars.forEach(c => {
     c.t = (c.t + dt * c.sp * c.dir * sp + 1) % 1;
     const [x1, z1, x2, z2] = c.L, ang = Math.atan2(z2 - z1, x2 - x1);
