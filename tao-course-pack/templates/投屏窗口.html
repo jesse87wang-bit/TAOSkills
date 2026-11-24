@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>投屏</title>
+<style>
+html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif}
+#stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+#wrap{position:relative;max-width:100vw;max-height:100vh;aspect-ratio:1672/941;width:min(100vw,calc(100vh*1672/941))}
+#wrap>img{width:100%;height:100%;display:block}
+.qr{position:absolute;display:flex;align-items:center;justify-content:center}
+.qr img{height:92%;width:auto}
+#media{position:absolute;inset:0;background:#000;display:none;align-items:center;justify-content:center;z-index:5}
+#media video,#media img{max-width:100%;max-height:100%}
+#media iframe{width:100%;height:100%;border:0;background:#fff}
+#cd{position:absolute;right:2vw;top:2vh;z-index:9;background:rgba(0,0,0,.72);color:#fff;border:3px solid #ff7a1a;border-radius:16px;padding:.6vh 1.6vw;font-size:6vh;font-weight:800;font-variant-numeric:tabular-nums;display:none}
+#cd.end{background:#c62828}
+#hint{position:absolute;left:10px;bottom:8px;color:#444;font-size:12px;z-index:10}
+#wait{color:#666;font-size:20px}
+</style>
+</head>
+<body>
+<div id="stage"><div id="wait">等待授课台……（在授课台点「打开独立投屏窗口」）</div></div>
+<div id="media"></div>
+<div id="cd"></div>
+<div id="hint">F 全屏 · Esc 回课件 · C 关倒计时</div>
+<script>
+const stage=document.getElementById("stage"),media=document.getElementById("media"),cd=document.getElementById("cd");
+let cdTimer=null,lastSlide=null;
+function opener_(m){try{window.opener&&window.opener.postMessage(m,"*");}catch(e){}}
+function showSlide(d){
+  lastSlide=d; closeMedia();
+  let h='<div id="wrap"><img src="'+d.src+'">';
+  if(d.overlay){const o=d.overlay;h+='<div class="qr" style="left:'+o.x*100+'%;top:'+o.y*100+'%;width:'+o.w*100+'%;height:'+o.h*100+'%"><img src="'+o.img+'" onerror="this.remove()"></div>';}
+  stage.innerHTML=h+'</div>';
+}
+function closeMedia(){media.querySelectorAll("video").forEach(v=>v.pause());media.innerHTML="";media.style.display="none";}
+function showMedia(el){media.innerHTML="";media.appendChild(el);media.style.display="flex";}
+function err(src){closeMedia();opener_({type:"asset-error",src:src});}
+window.addEventListener("message",e=>{
+  const d=e.data||{};
+  if(d.type==="slide")showSlide(d);
+  else if(d.type==="video"){const v=document.createElement("video");v.src=d.src;v.controls=true;v.autoplay=true;v.onerror=()=>err(d.src);showMedia(v);}
+  else if(d.type==="img"){const i=new Image();i.src=d.src;i.onerror=()=>err(d.src);showMedia(i);}
+  else if(d.type==="page"){const f=document.createElement("iframe");f.src=d.src;showMedia(f);}
+  else if(d.type==="file"){const url=URL.createObjectURL(d.file);
+     if(d.file.type.startsWith("image/")){const i=new Image();i.src=url;showMedia(i);}
+     else{const v=document.createElement("video");v.src=url;v.controls=true;v.autoplay=true;v.onerror=()=>err(d.name);showMedia(v);}}
+  else if(d.type==="countdown")startCd(d.min);
+});
+function startCd(min){
+  clearInterval(cdTimer);const end=Date.now()+min*60000;cd.style.display="block";cd.classList.remove("end");
+  const f=()=>{let s=Math.round((end-Date.now())/1000);if(s<=0){s=0;cd.classList.add("end");clearInterval(cdTimer);}
+    cd.textContent=String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");};
+  f();cdTimer=setInterval(f,500);
+}
+document.addEventListener("keydown",e=>{
+  if(e.key==="f"||e.key==="F"){document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();}
+  if(e.key==="Escape"){if(lastSlide)showSlide(lastSlide);else closeMedia();}
+  if(e.key==="c"||e.key==="C"){clearInterval(cdTimer);cd.style.display="none";}
+});
+opener_({type:"ready"});
+</script>
+</body>
+</html>

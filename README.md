@@ -59,6 +59,22 @@ https://github.com/jesse87wang-bit/TAOSkills/tree/main/tao-training-demo
 请完整加载整个目录。安装后用「用 tao-training-demo 做一个 XX 助手」调用。
 ```
 
+### tao-course-pack
+
+**线下 AI 培训课备课**。把「课件 + 讲稿 + 大纲」变成讲师拿去就能上课的一整套资料。顺序固定：先出《讲师上课材料包》Word（按模块→小节的逐字讲稿、时间轴、提示词全集、素材清单、学员表单、项目包、转训包、课前准备），再出授课台与投屏窗口、提示词一键复制、离线卡、打印件、就绪检查表。
+
+- 安装：[`tao-course-pack/INSTALL.md`](tao-course-pack/INSTALL.md)
+- Skill：[`tao-course-pack/SKILL.md`](tao-course-pack/SKILL.md)
+- 说明：[`tao-course-pack/README.md`](tao-course-pack/README.md)
+- Changelog：[`tao-course-pack/CHANGELOG.md`](tao-course-pack/CHANGELOG.md)
+
+```text
+请从 GitHub 安装并启用 tao-course-pack：
+https://github.com/jesse87wang-bit/TAOSkills/tree/main/tao-course-pack
+
+请完整加载整个目录。安装后用「用 tao-course-pack 帮我备课」调用。
+```
+
 ### tao-company-atlas
 
 **企业 AI 全貌**。输入一家公司（加上手头资料），自动研究后生成：3D AI 运转全景（园区全景、AI 原生组织过渡态/理想态、老板驾驶舱）+ AI 全貌蓝图（9 个板块），各配一份讲解稿。两张页都是可离线双击打开的单文件网页。
