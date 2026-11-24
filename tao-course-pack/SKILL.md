@@ -20,6 +20,8 @@ description: "给线下AI培训课备一整套上课资料：先出一份《讲�
 | `examples/course.example.json` | 虚构的最小示例，照它的字段写真课的 course.json |
 | `publish_github.sh` | 推送到 GitHub `jesse87wang-bit/TAOSkills` 的 `tao-course-pack/`；只推通用部分，任何一期课的课件、讲稿、学员、素材都不进仓库 |
 
+本地没有 scripts/、assets/、templates/ 时（例如账号里只存了 SKILL.md），先从 https://github.com/jesse87wang-bit/TAOSkills/tree/main/tao-course-pack 取整个目录再用。
+
 ## 交付顺序（固定，不要颠倒）
 
 1. **第一步：先出《讲师上课材料包》Word 文件**（结构见第 0.5 节）。这是讲师通读、修改、转发的主文件，所有内容都在这一份里。
